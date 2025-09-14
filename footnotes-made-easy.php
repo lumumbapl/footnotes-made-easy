@@ -48,7 +48,7 @@ class swas_wp_footnotes {
     private $current_options;
     private $default_options;
 
-    const OPTIONS_VERSION = "5"; // Incremented when the options array changes
+    const OPTIONS_VERSION = "6"; // Incremented when the options array changes
 
     // Constructor
     function __construct() {
@@ -85,6 +85,7 @@ class swas_wp_footnotes {
             'no_display_category' => false,
             'no_display_search' => false,
             'no_display_feed' => false,
+            'no_display_urls' => '',
             'combine_identical_notes' => true,
             'priority' => 11,
             'footnotes_open' => ' ((',
@@ -134,6 +135,7 @@ class swas_wp_footnotes {
             $footnotes_options[ 'no_display_category' ] = ( array_key_exists( 'no_display_category', $post_array ) ) ? true : false;
             $footnotes_options[ 'no_display_search' ] = ( array_key_exists( 'no_display_search', $post_array ) ) ? true : false;
             $footnotes_options[ 'no_display_feed' ] = ( array_key_exists( 'no_display_feed', $post_array ) ) ? true : false;
+            $footnotes_options[ 'no_display_urls' ] = sanitize_textarea_field( $post_array[ 'no_display_urls' ] );
             $footnotes_options[ 'combine_identical_notes' ] = ( array_key_exists( 'combine_identical_notes', $post_array ) ) ? true : false;
             $footnotes_options[ 'priority' ] = sanitize_text_field( $post_array[ 'priority' ] );
             $footnotes_options[ 'footnotes_open' ] = sanitize_text_field( $post_array[ 'footnotes_open' ] );
@@ -153,6 +155,44 @@ class swas_wp_footnotes {
         add_filter( 'plugin_action_links', array( $this, 'add_settings_link' ), 10, 2 );
         add_filter( 'plugin_row_meta', array( $this, 'plugin_meta' ), 10, 2 );	
     }
+	
+	/**
+	* Checks if the current URL is in the exclusion list
+	*
+	* @since	4.0.0
+	*
+	* @return	bool	True if current URL should be excluded
+	*/
+	private function is_url_excluded() {
+		
+		if ( empty( $this->current_options[ 'no_display_urls' ] ) ) {
+			return false;
+		}
+		
+		// Get current URL
+		$current_url = home_url( $_SERVER['REQUEST_URI'] );
+		
+		// Parse the exclusion URLs (one per line)
+		$excluded_urls = array_filter( array_map( 'trim', explode( "\n", $this->current_options[ 'no_display_urls' ] ) ) );
+		
+		foreach ( $excluded_urls as $excluded_url ) {
+			// Support both full URLs and relative paths
+			if ( strpos( $excluded_url, 'http' ) === 0 ) {
+				// Full URL comparison
+				if ( $current_url === $excluded_url ) {
+					return true;
+				}
+			} else {
+				// Relative path comparison
+				$current_path = parse_url( $current_url, PHP_URL_PATH );
+				if ( $current_path === $excluded_url || $current_path === '/' . ltrim( $excluded_url, '/' ) ) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
 	
 	/**
 	* Searches the text and extracts footnotes
@@ -200,6 +240,7 @@ class swas_wp_footnotes {
 		if ( $this->current_options[ 'no_display_search' ] && is_search() ) $display = false;
 		if ( $this->current_options[ 'no_display_feed' ] && is_feed() ) $display = false;
 		if ( $this->current_options[ 'no_display_preview' ] && is_preview() ) $display = false;
+		if ( $this->is_url_excluded() ) $display = false;
 
 		$footnotes = array();
 
@@ -349,7 +390,7 @@ class swas_wp_footnotes {
 		if ( false !== strpos( $file, 'footnotes-made-easy.php' ) ) {
 			
 			$links[] = '<a class="footnotes-made-easy-review" href="https://wordpress.org/support/plugin/footnotes-made-easy/reviews/#new-post" target="_blank" rel="noopener noreferrer" title="' . esc_attr__( 'Rate our plugin', 'footnotes-made-easy' ) . '">
-					<span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+					<span>â˜…</span><span>â˜…</span><span>â˜…</span><span>â˜…</span><span>â˜…</span>
 					</a>';
 
 		echo '<style>.footnotes-made-easy-review span,.footnotes-made-easy-review span:hover{color:#ffb900}.footnotes-made-easy-review span:hover~span{color:#888}</style>';
@@ -583,7 +624,7 @@ class swas_wp_footnotes {
 								'jquery-ui-core',
 								'jquery-ui-position'
 							),
-						'1.0.0',  // Add version number
+						'1.0.0',  // Version number
 						true      // Load in footer
 						);
 
