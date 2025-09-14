@@ -40,11 +40,16 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
     }
     
     // Sanitize textarea content (allows some HTML but strips dangerous content)
-    $textarea_fields = array('pre_footnotes', 'post_footnotes');
+    $textarea_fields = array('pre_footnotes', 'post_footnotes', 'no_display_urls');
     foreach ($textarea_fields as $field) {
         if (isset($_POST[$field])) {
-            // Use wp_kses_post to allow safe HTML tags in footnote headers/footers
-            $sanitized_options[$field] = wp_kses_post($_POST[$field]);
+            if ($field === 'no_display_urls') {
+                // For URL exclusions, use sanitize_textarea_field to preserve line breaks
+                $sanitized_options[$field] = sanitize_textarea_field($_POST[$field]);
+            } else {
+                // Use wp_kses_post to allow safe HTML tags in footnote headers/footers
+                $sanitized_options[$field] = wp_kses_post($_POST[$field]);
+            }
         }
     }
     
@@ -301,6 +306,14 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
 							<span class="toggle-text"><?php  echo esc_html( ucwords( __('in date-based archives', 'footnotes-made-easy' ) ) ); ?></span>
 						</div>
 					</td>
+					</tr>
+
+					<tr>
+						<th scope="row"><label for="no_display_urls"><?php echo esc_html( ucwords( __( 'exclude URLs', 'footnotes-made-easy' ) ) ); ?></label></th>
+						<td>
+							<textarea name="no_display_urls" id="no_display_urls" rows="5" cols="60" class="large-text code" placeholder="/page-slug/&#10;https://example.com/another-page/"><?php echo esc_textarea( $this->current_options[ 'no_display_urls' ] ); ?></textarea>
+							<p class="description"><?php esc_html_e( 'Enter URLs where footnotes should be hidden, one per line. This setting will prevent footnotes from displaying on the specified pages even when footnote markup is present.', 'footnotes-made-easy' ); ?></p>
+						</td>
 					</tr>
 				</table>
 				</div>
