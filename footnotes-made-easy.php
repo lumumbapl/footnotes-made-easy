@@ -438,38 +438,22 @@ class swas_wp_footnotes {
 	}
 
 	/**
-* Add to Admin
-*
-* Add the footnotes page as a standalone menu item
-*
-* @since	4.0.0
-*/
+	* Add to Admin
+	*
+	* Add the options page to the admin menu
+	*
+	* @since	1.0
+	*/
 
-function add_options_page() {
+	function add_options_page() {
 
-	global $footnotes_hook;
+		global $footnotes_hook;
 
-	$plugin_menu_icon = null;
+		$footnotes_hook = add_options_page( __( 'Footnotes Made Easy', 'footnotes-made-easy' ), __( 'Footnotes Made Easy', 'footnotes-made-easy' ), 'manage_options', 'footnotes-options-page', array( $this, 'footnotes_options_page' ) );
 
-	// SVG icon - already base64 encoded
-	$icon_svg = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjZjk4MjZjOwogICAgICB9CgogICAgICAuY2xzLTEsIC5jbHMtMiB7CiAgICAgICAgc3Ryb2tlLXdpZHRoOiAwcHg7CiAgICAgIH0KCiAgICAgIC5jbHMtMiB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGcgaWQ9IkxheWVyXzEtMiIgZGF0YS1uYW1lPSJMYXllciAxIj4KICAgIDxnPgogICAgICA8Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjU2Ii8+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTM2OC4yLDQwNS44NWgtMTM3LjIzYy01OC41MywwLTEwNi4xNC00Ny42Mi0xMDYuMTQtMTA2LjE1VjEwNi4xNWgxNjkuMzVjMzAuODcsMCw1NS45OCwyNS4xMSw1NS45OCw1NS45OSwwLDI0LjYyLTE1Ljc4LDQ1LjYyLTM3Ljc1LDUzLjQydjIuODJoMjAuNDVjMjkuOTUsMCw1NC4zMSwyNC4zNyw1NC4zMSw1NC4zMSwwLDMyLjE3LTI2LjE3LDU4LjM0LTU4LjM0LDU4LjM0aC02Ny4zNmMtMzQuMDYsMC02MS43Ny0yNy43MS02MS43Ny02MS43N3YtMTI1LjI4aC0zNy4wNHYxNTUuNzJjMCwzNy42NywzMC42NSw2OC4zMSw2OC4zMSw2OC4zMWgxMzcuMjN2MzcuODNaTTIzNy41MywxNDMuOTh2MTI1LjI4YzAsMTMuMiwxMC43NCwyMy45NCwyMy45NCwyMy45NGg2Ny4zNmMxMS4zMSwwLDIwLjUxLTkuMiwyMC41MS0yMC41MSwwLTkuMDktNy4zOS0xNi40OC0xNi40OC0xNi40OGgtNTguMjl2LTc1LjI1aDE4LjkyYzEwLjM4LDAsMTguODMtOC40NSwxOC44My0xOC44M3MtOC4xNC0xOC4xNS0xOC4xNS0xOC4xNWgtNTYuNjRaIi8+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4=';
-	
-	$plugin_menu_icon = plugin_dir_url( __FILE__ ) .'img/icon.svg';
+		add_action( 'load-' . $footnotes_hook, array( $this, 'footnotes_help' ) );
 
-	// Add as top-level menu item positioned after Comments
-	$footnotes_hook = add_menu_page(
-		__( 'Footnotes Made Easy', 'footnotes-made-easy' ),  // Page title
-		__( 'Footnotes', 'footnotes-made-easy' ),           // Menu title
-		'manage_options',                                    
-		'footnotes-options-page',                           
-		array( $this, 'footnotes_options_page' ),           
-		$plugin_menu_icon,                                           // Icon (SVG)
-		26                                                   // Position (26 places it after Comments, which is at 25)
-	);
-
-	add_action( 'load-' . $footnotes_hook, array( $this, 'footnotes_help' ) );
-}
-
+	}
 	/**
 	* Insert additional CSS
 	*
