@@ -30,7 +30,8 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
         'backlink',
         'post_backlink',
         'footnotes_open',
-        'footnotes_close'
+        'footnotes_close',
+        'priority'
     );
     
     foreach ($text_fields as $field) {
@@ -55,24 +56,12 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
     
     // Sanitize dropdown selection (validate against allowed values)
     if (isset($_POST['list_style_type'])) {
-        $allowed_styles = array_keys($this->styles); // Assuming $this->styles contains valid options
+        $allowed_styles = array_keys($this->styles);
         $submitted_style = sanitize_text_field($_POST['list_style_type']);
         if (in_array($submitted_style, $allowed_styles, true)) {
             $sanitized_options['list_style_type'] = $submitted_style;
         } else {
-            // Fallback to default if invalid value submitted
             $sanitized_options['list_style_type'] = 'decimal';
-        }
-    }
-    
-    // Sanitize numeric priority field
-    if (isset($_POST['priority'])) {
-        $priority = absint($_POST['priority']);
-        // Ensure priority is within reasonable range (1-999)
-        if ($priority >= 1 && $priority <= 999) {
-            $sanitized_options['priority'] = $priority;
-        } else {
-            $sanitized_options['priority'] = 11; // Default value
         }
     }
     
@@ -91,16 +80,12 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
     );
     
     foreach ($boolean_fields as $field) {
-        // Checkbox values: if present = true, if not present = false
         $sanitized_options[$field] = isset($_POST[$field]) ? true : false;
     }
     
-    // Update options in database (this would typically call update_option())
-    // Assuming this updates $this->current_options
+    // Update options in database
     $this->current_options = array_merge($this->current_options, $sanitized_options);
-    
-    // Save to database
-    update_option('footnotes_made_easy_options', $this->current_options);
+    update_option('swas_footnote_options', $this->current_options);
     
     $message = __('Settings saved successfully.', 'footnotes-made-easy');
 } else {
@@ -130,7 +115,6 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
 				<table class="form-table">
 					<tr>
 					<th scope="row"><label for="pre_identifier"><?php echo esc_html( ucwords( __( 'identifier', 'footnotes-made-easy' ) ) ); ?></label></th>
-
 					<td>
 					<input type="text" size="3" name="pre_identifier" value="<?php echo esc_attr(  $this->current_options[ 'pre_identifier' ] ); ?>" />
 					<input type="text" size="3" name="inner_pre_identifier" value="<?php echo esc_attr(  $this->current_options[ 'inner_pre_identifier' ] ); ?>" />
@@ -169,10 +153,8 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
 					<input type="text" size="3" name="pre_backlink" value="<?php echo esc_attr( $this->current_options[ 'pre_backlink' ] ); ?>" />
 					<input type="text" size="10" name="backlink" value="<?php echo esc_attr($this->current_options[ 'backlink' ]); ?>" />
 					<input type="text" size="3" name="post_backlink" value="<?php echo esc_attr( $this->current_options[ 'post_backlink' ] ); ?>" />
-
 					<!--  translators: %s is the suggested back-link character (↩). -->
 					<p class="description"><?php printf( esc_html__( 'These affect how the back-links after each footnote look. A good back-link character is %s. If you want to remove the back-links all together, you can effectively do so by making all these settings blank.', 'footnotes-made-easy' ), '&#8617; (↩)' ); ?></p></td>
-
 					</tr>
 				</table>
 						</div>
@@ -181,7 +163,6 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
 			<!-- Content Settings Section -->
 			<div class="footnotes-settings-section">
 				<h2><?php esc_html_e( 'Content Settings', 'footnotes-made-easy' ); ?></h2>
-				
 				<div class="footnotes-settings-text">
 				<table class="form-table">
 					<tr>
@@ -202,7 +183,6 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
 			<!-- Behavior Settings Section -->
 			<div class="footnotes-settings-section">
 				<h2><?php esc_html_e( 'Behavior Settings', 'footnotes-made-easy' ); ?></h2>
-				
 				<div class="footnotes-settings-text">
 				<table class="form-table">
 					<tr>
@@ -218,7 +198,6 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
 						</td>
 					</tr>
 
-					<!-- Combine Notes Toggle -->
 					<tr>
 						<th scope="row"><?php echo esc_html( ucwords( __( 'combine notes', 'footnotes-made-easy' ) ) ); ?></th>
 						<td>
@@ -244,7 +223,6 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
 			<!-- Suppress Footnotes Section -->
 			<div class="footnotes-settings-section">
 				<h2><?php echo esc_html( ucwords( __( 'suppress Footnotes', 'footnotes-made-easy' ) ) ); ?></h2>
-				
 				<div class="footnotes-settings-text">
 				<table class="form-table">
 					<tr>
@@ -322,12 +300,10 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
 			<!-- Advanced Settings Section -->
 			<div class="footnotes-settings-section">
 				<h2><?php esc_html_e( 'Advanced Settings', 'footnotes-made-easy' ); ?></h2>
-				
 				<div class="footnotes-warning">
 					<strong><?php esc_html_e( 'Warning:', 'footnotes-made-easy' ); ?></strong> 
 					<?php esc_html_e( 'Changing the following settings will change functionality in a way which may stop footnotes from displaying correctly. For footnotes to work as expected after updating these settings, you will need to manually update all existing posts with footnotes.', 'footnotes-made-easy' ); ?>
 				</div>
-				
 				<div class="footnotes-settings-text">
 				<table class="form-table">
 					<tr>
@@ -357,6 +333,51 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
 	<!-- Right Column - Info Cards (30%) -->
 	<div class="footnotes-right-column">
 		
+		<!-- Newsletter Subscription Card -->
+		<div class="footnotes-card mailerlite-card">
+			<h3><?php esc_html_e( 'Stay Connected', 'footnotes-made-easy' ); ?></h3>
+			<p><?php esc_html_e('Join our community to receive plugin updates, tips, and exclusive WordPress resources delivered straight to your inbox.', 'footnotes-made-easy'); ?></p>
+			
+			<div class="mailerlite-form-container">
+				<form id="mailerlite-subscribe-form" class="mailerlite-custom-form" method="post" action="">
+					<div class="form-field">
+						<label for="ml_firstname"><?php esc_html_e('First Name', 'footnotes-made-easy'); ?></label>
+						<input 
+							type="text" 
+							id="ml_firstname" 
+							name="ml_firstname" 
+							placeholder="<?php esc_attr_e('Enter your first name', 'footnotes-made-easy'); ?>" 
+							required
+						/>
+					</div>
+					
+					<div class="form-field">
+						<label for="ml_email"><?php esc_html_e('Email Address', 'footnotes-made-easy'); ?></label>
+						<input 
+							type="email" 
+							id="ml_email" 
+							name="ml_email" 
+							placeholder="<?php esc_attr_e('Enter your email', 'footnotes-made-easy'); ?>" 
+							required
+						/>
+					</div>
+					
+					<!-- UPDATED: Full width button structure -->
+					<div class="footnotes-submit">
+						<button type="submit" class="button button-primary mailerlite-submit">
+							<?php esc_html_e('Subscribe Now', 'footnotes-made-easy'); ?>
+						</button>
+					</div>
+					
+					<div class="mailerlite-message" style="display: none;"></div>
+					
+					<p class="privacy-note">
+						<?php esc_html_e('We respect your privacy. Unsubscribe at any time.', 'footnotes-made-easy'); ?>
+					</p>
+				</form>
+			</div>
+		</div>
+
 		<!-- Usage Guide Card -->
 		<div class="footnotes-card">
 			<h3><?php esc_html_e( 'Show Us Some Love', 'footnotes-made-easy' ); ?></h3>
@@ -412,8 +433,6 @@ if (!empty($_POST['save_options']) && check_admin_referer('footnotes-nonce', 'fo
 				</a>
 			</div>
 		</div>
-
-		
 		
 	</div>
 

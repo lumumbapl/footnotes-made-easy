@@ -3,7 +3,7 @@
  * Plugin Name:       Footnotes Made Easy
  * Plugin URI:        https://lumumbas.blog/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           4.0.0-beta.2
+ * Version:           4.0.0-beta.3
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
@@ -29,12 +29,66 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * MailerLite integration handler
+ * This must be included before admin_enqueue_scripts hook
+ */
+require_once plugin_dir_path( __FILE__ ) . 'includes/mailerlite-handler.php';
+
+/**
  * Enqueue plugin styles
+ * UPDATED: Changed path from 'css/options.css' to 'assets/css/options.css'
  */
 function fme_enqueue_styles() {
-    wp_enqueue_style( 'options-styles', plugin_dir_url( __FILE__ ) . 'css/options.css', array(), filemtime( plugin_dir_path( __FILE__ ) . 'css/options.css' ) );
+    wp_enqueue_style( 
+        'options-styles', 
+        plugin_dir_url( __FILE__ ) . 'assets/css/options.css', 
+        array(), 
+        filemtime( plugin_dir_path( __FILE__ ) . 'assets/css/options.css' ) 
+    );
 }
 add_action( 'admin_enqueue_scripts', 'fme_enqueue_styles' );
+
+/**
+ * Custom admin footer text
+ * 
+ * @since 4.0.0
+ */
+function fme_custom_admin_footer( $text ) {
+    $screen = get_current_screen();
+    
+    // Only show on the Footnotes Made Easy settings page
+    if ( isset( $screen->id ) && strpos( $screen->id, 'footnotes-options-page' ) !== false ) {
+        $rating_url = 'https://wordpress.org/support/plugin/footnotes-made-easy/reviews/?filter=5#new-post';
+        $text = sprintf(
+            __( 'If you like Footnotes Made Easy please leave us a %s rating. A huge thanks in advance!', 'footnotes-made-easy' ),
+            '<a href="' . esc_url( $rating_url ) . '" target="_blank" rel="noopener noreferrer">★★★★★</a>'
+        );
+    }
+    
+    return $text;
+}
+add_filter( 'admin_footer_text', 'fme_custom_admin_footer' );
+
+/**
+ * Custom admin footer version
+ * 
+ * @since 4.0.0
+ */
+function fme_custom_admin_footer_version( $text ) {
+    $screen = get_current_screen();
+    
+    // Only show on the Footnotes Made Easy settings page
+    if ( isset( $screen->id ) && strpos( $screen->id, 'footnotes-options-page' ) !== false ) {
+        $plugin_data = get_plugin_data( __FILE__ );
+        $text = sprintf(
+            __( 'Version %s', 'footnotes-made-easy' ),
+            $plugin_data['Version']
+        );
+    }
+    
+    return $text;
+}
+add_filter( 'update_footer', 'fme_custom_admin_footer_version', 11 );
 
 // Instantiate the class
 $swas_wp_footnotes = new swas_wp_footnotes();
@@ -244,126 +298,120 @@ class swas_wp_footnotes {
 
 		$footnotes = array();
 
-		// Check if this post is using a different list style to the settings
+		// Check for combine identical notes
 
-		if ( get_post_meta( $post->ID, 'footnote_style', true ) && array_key_exists( get_post_meta( $post->ID, 'footnote_style', true ), $this->styles ) ) {
-			$style = get_post_meta( $post->ID, 'footnote_style', true );
-		} else {
-			$style = $this->current_options[ 'list_style_type' ];
-		}
+		if ( $this->current_options[ 'combine_identical_notes' ] ) {
 
-		// Create 'em
+			$used_identifiers = array();
 
-		for ( $i = 0; $i < count( $identifiers ); $i++ ){
-
-			// Look for ref: and replace in identifiers array
-
-			if ( 'ref:' === substr( $identifiers[ $i ][ 2 ], 0, 4 ) ){
-				$ref = ( int )substr( $identifiers[ $i ][ 2 ],4 );
-				$identifiers[ $i ][ 'text' ] = $identifiers[ $ref-1 ][ 2 ];
-			}else{
-				$identifiers[ $i ][ 'text' ] = $identifiers[ $i ][ 2 ];
-			}
-
-			// if we're combining identical notes check if we've already got one like this & record keys
-
-			if ( $this->current_options[ 'combine_identical_notes' ] ){
-				for ( $j = 0; $j < count( $footnotes ); $j++ ){
-					if ( $footnotes[ $j ][ 'text' ] === $identifiers[ $i ][ 'text' ] ){
-						$identifiers[ $i ][ 'use_footnote' ] = $j;
-						$footnotes[ $j ][ 'identifiers' ][] = $i;
-						break;
-					}
+			for ( $iter = 0; $iter < count( $identifiers ); $iter++ ) {
+				$identifier = $identifiers[ $iter ][ 2 ];
+				if ( !array_key_exists( $identifier, $used_identifiers ) ) {
+					$used_identifiers[ $identifier ] = $iter + $start_number;
 				}
 			}
+		}
 
-			if ( !isset( $identifiers[ $i ][ 'use_footnote' ] ) ){
+		// Create the footnotes and setup the links
 
-				// Add footnote and record the key
+		$num = $start_number;
 
-				$identifiers[ $i ][ 'use_footnote' ] = count( $footnotes );
-				$footnotes[ $identifiers[ $i ][ 'use_footnote' ] ][ 'text' ] = $identifiers[ $i ][ 'text' ];
-				$footnotes[ $identifiers[ $i ][ 'use_footnote' ] ][ 'symbol' ] = isset( $identifiers[ $i ][ 'symbol' ] ) ? $identifiers[ $i ][ 'symbol' ] : '';
-				$footnotes[ $identifiers[ $i ][ 'use_footnote' ] ][ 'identifiers' ][] = $i;
+		for ( $iter = 0; $iter < count( $identifiers ); $iter++ ) {
+			$identifier = $identifiers[ $iter ][ 2 ];
+
+			// if we're combining identical notes then check if this has already been added
+
+			if ( $this->current_options[ 'combine_identical_notes' ] && array_key_exists( $identifier, $used_identifiers ) && $used_identifiers[ $identifier ] !== $num ) {
+				$identifier_to_use = $used_identifiers[ $identifier ];
+			} else {
+				$identifier_to_use = $num;
+				$footnotes[ $num ] = $identifier;
+				$num++;
 			}
+
+			// Replace the link in the post
+
+			$link = "";
+
+			if ( $display ) {
+
+				$id_id = "fn-" . $post->ID . "-" . $identifier_to_use;
+				$id_num = "fnref-" . $post->ID . "-" . $identifier_to_use;
+				$id_part = ' id="' . $id_num . '"';
+
+				$link = $this->current_options[ 'pre_identifier' ];
+				if ( 0 !== strlen( $link ) ) $link = '<sup>' . $link . '</sup>';
+
+				$link .= '<sup' . $id_part . '>';
+				$link .= $this->current_options[ 'inner_pre_identifier' ];
+				$link .= '<a href="#' . $id_id . '">';
+
+				if ( 'symbol' === $this->current_options[ 'list_style_type' ] ) {
+					$link .= $this->convert_num( $identifier_to_use, $this->current_options[ 'list_style_type' ], count( $identifiers ) );
+				} else {
+					$link .= $identifier_to_use;
+				}
+
+				$link .= '</a>';
+				$link .= $this->current_options[ 'inner_post_identifier' ] . '</sup>';
+
+				$link .= $this->current_options[ 'post_identifier' ];
+				if ( 0 !== strlen( $this->current_options[ 'post_identifier' ] ) ) $link = $link . '</sup>';
+
+			}
+
+			$data = substr_replace( $data, $link, strpos( $data, $identifiers[ $iter ][ 0 ] ), strlen( $identifiers[ $iter ][ 0 ] ) );
+
 		}
 
-		// Footnotes and identifiers are stored in the array
+		// Now add the footnotes to the bottom
 
-		$use_full_link = false;
-		if ( is_feed() ) $use_full_link = true;
+		if ( $display && count( $footnotes ) !== 0 ) {
 
-		if ( is_preview() ) $use_full_link = false;
-
-		// Display identifiers
-
-		foreach ( $identifiers as $key => $value ) {
-
-			$id_id = "identifier_" . $key . "_" . $post->ID;
-			$id_num = ( $style === 'decimal' ) ? $value[ 'use_footnote' ] + $start_number : $this->convert_num( $value[ 'use_footnote' ] + $start_number, $style, count( $footnotes ) );
-			$id_href = ( ( $use_full_link ) ? get_permalink( $post->ID ) : '' ) . "#footnote_" . $value[ 'use_footnote' ] . "_" . $post->ID;
-			$id_title = str_replace( '"', "&quot;", htmlentities( html_entity_decode( wp_strip_all_tags( $value[ 'text' ] ), ENT_QUOTES, 'UTF-8' ), ENT_QUOTES, 'UTF-8' ) );
-			$id_replace = $this->current_options[ 'pre_identifier' ] . '<a href="' . $id_href . '" id="' . $id_id . '" class="footnote-link footnote-identifier-link" title="' . $id_title . '">' . $this->current_options[ 'inner_pre_identifier' ] . $id_num . $this->current_options[ 'inner_post_identifier' ] . '</a>' . $this->current_options[ 'post_identifier' ];
-			if ( $this->current_options[ 'superscript' ] ) $id_replace = '<sup>' . $id_replace . '</sup>';
-			if ( $display ) $data = substr_replace( $data, $id_replace, strpos( $data, $value[ 0 ] ), strlen( $value[ 0 ] ) );
-			else $data = substr_replace( $data, '', strpos( $data,$value[ 0 ] ),strlen( $value[ 0 ] ) );
-		}
-
-		// Display footnotes
-
-		if ( $display ) {
-
-			$footnotes_markup = '';
 			$start = ( $start_number !== 1 ) ? 'start="' . $start_number . '" ' : '';
-			$footnotes_markup = $footnotes_markup . $this->current_options[ 'pre_footnotes' ];
+			$data = $data . $this->current_options[ 'pre_footnotes' ];
 
-			$footnotes_markup = $footnotes_markup . '<ol ' . $start . 'class="footnotes">';
-			foreach ( $footnotes as $key => $value ) {
-				$footnotes_markup = $footnotes_markup . '<li id="footnote_' . $key . '_' . $post->ID . '" class="footnote"';
-				if ( 'symbol' === $style ) {
-					$footnotes_markup = $footnotes_markup . ' style="list-style-type:none;"';
-				} elseif( $style !== $this->current_options[ 'list_style_type' ] ) {
-					$footnotes_markup = $footnotes_markup . ' style="list-style-type:' . $style . ';"';
-				}
-				$footnotes_markup = $footnotes_markup . '>';
-				if ( 'symbol' === $style ) {
-					$footnotes_markup = $footnotes_markup . '<span class="symbol">' . $this->convert_num( $key + $start_number, $style, count( $footnotes ) ) . '</span> ';
-				}
-				$footnotes_markup = $footnotes_markup.$value[ 'text' ];
-				if (!is_feed()){
-					$footnotes_markup .= '<span class="footnote-back-link-wrapper">';
-					foreach( $value[ 'identifiers' ] as $identifier ){
-						$footnotes_markup = $footnotes_markup . $this->current_options[ 'pre_backlink' ] . '<a href="' . ( ( $use_full_link ) ? get_permalink( $post->ID ) : '' ) . '#identifier_' . $identifier . '_' . $post->ID . '" class="footnote-link footnote-back-link">' . $this->current_options[ 'backlink' ] . '</a>' . $this->current_options[ 'post_backlink' ];
-					}
-					$footnotes_markup .= '</span>';
-				}
-				$footnotes_markup = $footnotes_markup . '</li>';
+			if ( 'symbol' === $this->current_options[ 'list_style_type' ] ) {
+				$data = $data . '<ul class="footnotes">';
+			} else {
+				$data = $data . '<ol ' . $start . 'class="footnotes">';
 			}
-			$footnotes_markup = $footnotes_markup . '</ol>' . $this->current_options[ 'post_footnotes' ];
-			
-			$data = $data . $footnotes_markup;
+
+			foreach ( $footnotes as $num => $note ) {
+				$id_id = "fn-" . $post->ID . "-" . $num;
+				$id_num = "fnref-" . $post->ID . "-" . $num;
+				$data = $data . '<li id="' . $id_id . '">' . $note . $this->current_options[ 'pre_backlink' ] . '<a href="#' . $id_num . '">' . $this->current_options[ 'backlink' ] . '</a>' . $this->current_options[ 'post_backlink' ] . '</li>';
+			}
+
+			if ( 'symbol' === $this->current_options[ 'list_style_type' ] ) {
+				$data = $data . '</ul>';
+			} else {
+				$data = $data . '</ol>';
+			}
+
+			$data = $data . $this->current_options[ 'post_footnotes' ];
 		}
 
 		return $data;
 	}
 
 	/**
-	* Add Settings link to plugin list
+	* Add Settings Link
 	*
-	* Add a Settings link to the options listed against this plugin
+	* Add a Settings link to the plugin list
 	*
-	* @since	1.0.2
+	* @since	1.0
 	*
 	* @param	string  $links	Current links
 	* @param	string  $file	File in use
-	* @return   string			Links, now with settings added
+	* @return	string			Links, now with settings added
 	*/
 
 	function add_settings_link( $links, $file ) {
 
 		static $this_plugin;
 
-		if ( !$this_plugin ) { $this_plugin = plugin_basename( __FILE__ ); }
+		if ( empty( $this_plugin ) ) $this_plugin = plugin_basename( __FILE__ );
 
 		if ( strpos( $file, 'footnotes-made-easy.php' ) !== false ) {
 			$settings_link = '<a href="options-general.php?page=footnotes-options-page">' . __( 'Settings', 'footnotes-made-easy' ) . '</a>';
@@ -374,34 +422,42 @@ class swas_wp_footnotes {
 	}
 
 	/**
-	* Add meta to plugin details
+	* Plugin Meta
 	*
-	* Add options to plugin meta line
+	* Add meta links to plugin details
 	*
-	* @since    1.0.2
+	* @since	1.0
 	*
-	* @param    string  $links  Current links
-	* @param    string  $file   File in use
-	* @return   string          Links, now with settings added
+	* @param	string  $links	Current links
+	* @param	string  $file	File in use
+	* @return	string			Links, now with settings added
 	*/
 
 	function plugin_meta( $links, $file ) {
 
-		if ( false !== strpos( $file, 'footnotes-made-easy.php' ) ) {
-			
-			$links[] = '<a class="footnotes-made-easy-review" href="https://wordpress.org/support/plugin/footnotes-made-easy/reviews/#new-post" target="_blank" rel="noopener noreferrer" title="' . esc_attr__( 'Rate our plugin', 'footnotes-made-easy' ) . '">
-					<span>â˜…</span><span>â˜…</span><span>â˜…</span><span>â˜…</span><span>â˜…</span>
-					</a>';
+		if ( strpos( $file, 'footnotes-made-easy.php' ) !== false ) {
+
+			$links = array_merge( $links, array( '<a href="https://wordpress.org/support/plugin/footnotes-made-easy">' . __( 'Support', 'footnotes-made-easy' ) . '</a>' ) );
+
+			$links = array_merge( $links, array( '<a href="https://github.com/lumumbapl">' . __( 'Github', 'footnotes-made-easy' ) . '</a>' ) );
+
+			$links = array_merge( $links, array( '<a href="https://lumumbas.blog">' . __( 'Blog', 'footnotes-made-easy' ) . '</a>' ) );
+
+			// rating link; tweak based on review at https://wordpress.org/support/view/plugin-reviews/footnotes-made-easy (5 starts as of 04/22/2021)
+
+			$links[]='<a class="footnotes-made-easy-review" href="https://wordpress.org/support/view/plugin-reviews/footnotes-made-easy?rate=5#postform" target="_blank" title="If you have found this plugin useful please consider leaving a 5 star review." >
+					<span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+				</a>';
 
 		echo '<style>.footnotes-made-easy-review span,.footnotes-made-easy-review span:hover{color:#ffb900}.footnotes-made-easy-review span:hover~span{color:#888}</style>';
-		}
-		return $links;
 	}
-
+	return $links;
+}
 	/**
 	* Options Page
 	*
 	* Get the options and display the page
+	* UPDATED: Changed path from '/options.php' to '/includes/options.php'
 	*
 	* @since	1.0
 	*/
@@ -415,7 +471,8 @@ class swas_wp_footnotes {
 		}
 		$this->current_options = $new_setting;
 		unset( $new_setting );
-		include ( dirname(__FILE__) . '/options.php' );
+		// UPDATED PATH: Changed from dirname(__FILE__) . '/options.php'
+		include ( dirname(__FILE__) . '/includes/options.php' );
 	}
 
 	/**
@@ -608,6 +665,7 @@ class swas_wp_footnotes {
 	* Tooltip Scripts
 	*
 	* Add scripts and CSS for pretty tooltips
+	* UPDATED: Changed paths from 'js/' and 'css/' to 'assets/js/' and 'assets/css/'
 	*
 	* @since	1.0
 	*/
@@ -616,7 +674,7 @@ class swas_wp_footnotes {
 
 	wp_enqueue_script(
 						'wp-footnotes-tooltips',
-						plugins_url( 'js/tooltips.min.js' , __FILE__ ),
+						plugins_url( 'assets/js/tooltips.min.js' , __FILE__ ),
 						array(
 								'jquery',
 								'jquery-ui-widget',
@@ -628,6 +686,11 @@ class swas_wp_footnotes {
 						true      // Load in footer
 						);
 
-	wp_enqueue_style( 'wp-footnotes-tt-style', plugins_url( 'css/tooltips.min.css' , __FILE__ ), array(), '1.0.0' );
+	wp_enqueue_style( 
+		'wp-footnotes-tt-style', 
+		plugins_url( 'assets/css/tooltips.min.css' , __FILE__ ), 
+		array(), 
+		'1.0.0' 
+	);
 }
 }
