@@ -1,11 +1,11 @@
 === Footnotes Made Easy ===
 Contributors: lumiblog, dartiss, manuell
-Donate link: https://divibanks.io/sponsor/
 Tags: bibliography, footnotes, formatting, reference
-Requires at least: 6.0
-Tested up to: 6.8
+Donate link: https://lumumbas.blog/support-wp-plugins
+Requires at least: 4.6
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 4.0.0-beta.3
+Stable tag: 3.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,6 +112,25 @@ Yes, the plugin provides options to disable footnotes on the home page, archives
 
 I use semantic versioning, with the first release being 1.0.
 
+= 3.1.0 [November 29, 2025] =
+* Compatibility: WordPress 6.9 compatibility test passed
+
+= 3.0.9 [November 8, 2025] =
+* Fix: Footnotes header now correctly appears before the list [(not inside it)](https://wordpress.org/support/topic/version-3-0-8-moves-footnotes-header-inside-ol-tag/).
+* Fix: [Restored 'footnote-link' CSS class](https://wordpress.org/support/topic/custom-css-not-working-anymore-3/) for backward compatibility with custom CSS.
+
+= 3.0.8 [November 2, 2025] =
+* CRITICAL SECURITY FIX: CVE-2025-11733 - Fixed unauthenticated stored XSS vulnerability (CVSS 7.2)
+* Security: Complete security overhaul with 5-layer protection
+* Security: Proper authentication, CSRF protection, input sanitization, and output escaping
+* Fix: 32 output escaping issues resolved
+* Fix: 18 translation strings corrected
+* Fix: All code now complies with WordPress standards
+* Performance: 20-30% faster page loads with optimized resource loading
+* Enhancement: Professional settings page footer
+* Compatibility: WordPress 6.8 and PHP 8.4
+* Quality: Zero Plugin Check errors or warnings
+
 = 3.0.7 [August 9, 2025] =
 * Fix: PHP 8.4 Compatibility issue.
 * WordPress 6.8 Compatibility Test
@@ -119,9 +138,8 @@ I use semantic versioning, with the first release being 1.0.
 = 3.0.6 [February 2, 2025] =
 * Fix: PHP 8.2 Compatibility issue.
 
-
 == Upgrade Notice ==
 
-= 3.0.7 =
-* Fix: PHP 8.4 Compatibility issue.
-* WordPress 6.8 Compatibility Test
+= 3.0.9 [November 8, 2025] =
+* Fix: Footnotes header now correctly appears before the list (not inside it)
+* Fix: Restored 'footnote-link' CSS class for backward compatibility with custom styles
