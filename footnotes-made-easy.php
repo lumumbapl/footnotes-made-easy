@@ -272,12 +272,6 @@ class swas_wp_footnotes {
 			return $data;
 		}
 
-		// Check if current URL is excluded from footnote processing
-
-		if ( $this->is_excluded_url() ) {
-			return $data;
-		}
-
 		// Check for and setup the starting number
 
 		$start_number = ( 1 === preg_match( "|<!\-\-startnum=(\d+)\-\->|", $data,$start_number_array ) ) ? $start_number_array[ 1 ] : 1;
@@ -298,6 +292,7 @@ class swas_wp_footnotes {
 		if ( $this->current_options[ 'no_display_search' ] && is_search() ) $display = false;
 		if ( $this->current_options[ 'no_display_feed' ] && is_feed() ) $display = false;
 		if ( $this->current_options[ 'no_display_preview' ] && is_preview() ) $display = false;
+		if ( $this->is_excluded_url() ) $display = false;
 
 		$footnotes = array();
 
