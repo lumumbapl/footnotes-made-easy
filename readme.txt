@@ -1,7 +1,7 @@
 === Footnotes Made Easy ===
 Contributors: lumiblog, dartiss, manuell, ocenchris
 Tags: bibliography, footnotes, formatting, reference
-Donate link: https://lumumbas.blog/support-wp-plugins
+Donate link: https://lumumbas-blog.co.ke/support-wp-plugins
 Requires at least: 4.6
 Tested up to: 6.9
 Requires PHP: 7.4
