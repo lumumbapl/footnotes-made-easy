@@ -89,6 +89,7 @@ class swas_wp_footnotes {
             'footnotes_open' => ' ((',
             'footnotes_close' => '))',
             'pretty_tooltips' => false,
+            'exclude_urls' => '',
             'version' => self::OPTIONS_VERSION
         );
 
@@ -191,11 +192,60 @@ class swas_wp_footnotes {
         $footnotes_options[ 'footnotes_open' ] = sanitize_text_field( $post_array[ 'footnotes_open' ] );
         $footnotes_options[ 'footnotes_close' ] = sanitize_text_field( $post_array[ 'footnotes_close' ] );
         $footnotes_options[ 'pretty_tooltips' ] = ( array_key_exists( 'pretty_tooltips', $post_array ) ) ? true : false;
+        $footnotes_options[ 'exclude_urls' ] = sanitize_textarea_field( $post_array[ 'exclude_urls' ] ?? '' );
 
         update_option( 'swas_footnote_options', $footnotes_options );
         $this->current_options = $footnotes_options;
     }
 	
+	/**
+	 * Check if the current URL is excluded from footnote processing
+	 *
+	 * @since 3.2.0
+	 *
+	 * @return bool True if the current page should be excluded
+	 */
+	function is_excluded_url() {
+
+		$exclude_urls = $this->current_options[ 'exclude_urls' ] ?? '';
+		if ( empty( trim( $exclude_urls ) ) ) {
+			return false;
+		}
+
+		$current_path = isset( $_SERVER[ 'REQUEST_URI' ] ) ? parse_url( $_SERVER[ 'REQUEST_URI' ], PHP_URL_PATH ) : '';
+		$current_path = untrailingslashit( $current_path );
+		if ( empty( $current_path ) ) {
+			$current_path = '/';
+		}
+
+		$lines = explode( "\n", $exclude_urls );
+		foreach ( $lines as $line ) {
+			$line = trim( $line );
+			if ( empty( $line ) ) {
+				continue;
+			}
+
+			// If it looks like a full URL, extract the path component
+			if ( false !== strpos( $line, '://' ) ) {
+				$parsed = parse_url( $line, PHP_URL_PATH );
+				$line = $parsed ? $parsed : $line;
+			}
+
+			// If no leading slash, treat as a bare slug
+			if ( '/' !== substr( $line, 0, 1 ) ) {
+				$line = '/' . $line;
+			}
+
+			$line = untrailingslashit( $line );
+
+			if ( strpos( $current_path, $line ) === 0 ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/**
 	* Searches the text and extracts footnotes
 	*
@@ -220,7 +270,7 @@ class swas_wp_footnotes {
 
 		if ( !$post ) {
 			return $data;
-		}		
+		}
 
 		// Check for and setup the starting number
 
@@ -242,6 +292,7 @@ class swas_wp_footnotes {
 		if ( $this->current_options[ 'no_display_search' ] && is_search() ) $display = false;
 		if ( $this->current_options[ 'no_display_feed' ] && is_feed() ) $display = false;
 		if ( $this->current_options[ 'no_display_preview' ] && is_preview() ) $display = false;
+		if ( $this->is_excluded_url() ) $display = false;
 
 		$footnotes = array();
 

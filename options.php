@@ -109,6 +109,13 @@ if ( !empty( $_POST[ 'save_options' ] ) && ( check_admin_referer( 'footnotes-non
 
 			</td></tr>
 
+			<tr>
+			<th scope="row"><label for="exclude_urls"><?php esc_html_e( 'Exclude URLs', 'footnotes-made-easy' ); ?></label></th>
+			<td><textarea name="exclude_urls" id="exclude_urls" rows="5" cols="60" class="large-text code"><?php echo esc_textarea( $this->current_options[ 'exclude_urls' ] ); ?></textarea>
+			<p class="description"><?php esc_html_e( 'Enter URLs or paths where footnotes should be completely disabled/hidden (one per line). Examples: /about-us/ /special-offer https://yoursite.com/private-page/ This will prevent footnote parsing and display on these pages even if shortcodes or markup exist.', 'footnotes-made-easy' ); ?></p>
+			<p class="description"><code>/page-slug/</code><br><code>https://yoursite.com/special-page/</code></p>
+			</td></tr>
+
 		</table>
 
 		<p><?php esc_html_e( 'Changing the following settings will change functionality in a way which may stop footnotes from displaying correctly. For footnotes to work as expected after updating these settings, you will need to manually update all existing posts with footnotes.', 'footnotes-made-easy' ); ?></p>
