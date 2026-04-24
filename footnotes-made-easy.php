@@ -1,13 +1,13 @@
 <?php
 /*
  * Plugin Name:       Footnotes Made Easy
- * Plugin URI:        https://lumumbas.blog/plugins/footnotes-made-easy/
+ * Plugin URI:        https://lumumbas-blog.co.ke/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
  * Version:           4.0-beta.1
  * Requires at least: 4.6
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
- * Author URI:        https://lumumbas.blog
+ * Author URI:        https://lumumbas-blog.co.ke
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       footnotes-made-easy
