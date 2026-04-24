@@ -377,7 +377,7 @@
                             <div class="fme-field-hint"><?php esc_html_e( 'Enter URLs or paths where footnotes should be completely disabled (one per line). Both full URLs and path slugs are accepted. Footnote shortcodes on these pages will be silently removed.', 'footnotes-made-easy' ); ?></div>
                         </div>
                         <div class="fme-field-input">
-                            <textarea name="exclude_urls" id="exclude_urls" rows="5"><?php echo esc_textarea( $this->current_options['exclude_urls'] ); ?></textarea>
+                            <textarea name="exclude_urls" id="exclude_urls" rows="5"><?php echo esc_textarea( $this->current_options['exclude_urls'] ?? '' ); ?></textarea>
                             <span class="fme-small-hint"><?php esc_html_e( 'Examples: /about-us/ or https://yoursite.com/private-page/', 'footnotes-made-easy' ); ?></span>
                         </div>
                     </div>
