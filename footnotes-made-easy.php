@@ -461,6 +461,12 @@ class swas_wp_footnotes {
 	function footnotes_options_page() {
 
 		$this->current_options = get_option( 'swas_footnote_options' );
+		// Backfill any keys that may be missing from older saved option sets
+		foreach ( $this->default_options as $key => $value ) {
+			if ( ! array_key_exists( $key, $this->current_options ) ) {
+				$this->current_options[ $key ] = $value;
+			}
+		}
 		$new_setting = array();
 		foreach ( $this->current_options as $key=>$setting ) {
 			$new_setting[ $key ] = htmlentities( $setting );
@@ -696,7 +702,7 @@ class swas_wp_footnotes {
 	*
 	* Removes the default WordPress admin footer text on the plugin's settings page
 	*
-	* @since	3.1.4
+	* @since	4.0
 	*
 	* @param	string	$footer_text	The existing footer text
 	* @return	string					Empty string on our settings page, unchanged elsewhere
@@ -715,7 +721,7 @@ class swas_wp_footnotes {
 	*
 	* Removes the default WordPress version text on the plugin's settings page
 	*
-	* @since	3.1.4
+	* @since	4.0
 	*
 	* @param	string	$footer_version	The existing footer version text
 	* @return	string					Empty string on our settings page, unchanged elsewhere
