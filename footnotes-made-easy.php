@@ -1,13 +1,13 @@
 <?php
 /*
  * Plugin Name:       Footnotes Made Easy
- * Plugin URI:        https://lumumbas-blog.co.ke/plugins/footnotes-made-easy/
+ * Plugin URI:        https://lumumbas.blog/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           3.2.0-beta.1
+ * Version:           4.0-beta.1
  * Requires at least: 4.6
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
- * Author URI:        https://lumumbas-blog.co.ke
+ * Author URI:        https://lumumbas.blog
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       footnotes-made-easy
@@ -28,9 +28,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Enqueue plugin styles
+ * Enqueue plugin admin styles — only on our settings page
  */
-function fme_enqueue_styles() {
+function fme_enqueue_styles( $hook ) {
+    if ( 'settings_page_footnotes-options-page' !== $hook ) {
+        return;
+    }
     wp_enqueue_style( 'dbad-styles', plugin_dir_url( __FILE__ ) . 'css/dbad.css', array(), filemtime( plugin_dir_path( __FILE__ ) . 'css/dbad.css' ) );
 }
 add_action( 'admin_enqueue_scripts', 'fme_enqueue_styles' );
@@ -123,10 +126,9 @@ class swas_wp_footnotes {
 
         add_filter( 'plugin_action_links', array( $this, 'add_settings_link' ), 10, 2 );
         add_filter( 'plugin_row_meta', array( $this, 'plugin_meta' ), 10, 2 );
-        
-        // Custom admin footer for our settings page
-        add_filter( 'admin_footer_text', array( $this, 'admin_footer_text' ) );
-        add_filter( 'update_footer', array( $this, 'admin_footer_version' ), 11 );	
+
+        add_filter( 'admin_footer_text', array( $this, 'remove_footer_text' ) );
+        add_filter( 'update_footer', array( $this, 'remove_footer_version' ), 11 );
     }
 
     /**
@@ -245,7 +247,7 @@ class swas_wp_footnotes {
 
 		return false;
 	}
-
+	
 	/**
 	* Searches the text and extracts footnotes
 	*
@@ -270,7 +272,7 @@ class swas_wp_footnotes {
 
 		if ( !$post ) {
 			return $data;
-		}
+		}		
 
 		// Check for and setup the starting number
 
@@ -469,13 +471,20 @@ class swas_wp_footnotes {
 	}
 
 	/**
-	* Add Options Help
+	* Remove Help Tabs
 	*
-	* Add help tab to options screen
+	* Removes the WP contextual help tab and screen options
+	* from our settings page for a cleaner UI.
 	*
-	* @since	1.0
-	*
+	* @since 3.1.1
 	*/
+	function remove_help_tabs() {
+		$screen = get_current_screen();
+		if ( $screen ) {
+			$screen->remove_help_tabs();
+		}
+	}
+
 
 	function footnotes_help() {
 
@@ -542,7 +551,7 @@ class swas_wp_footnotes {
 
 		$footnotes_hook = add_options_page( __( 'Footnotes Made Easy', 'footnotes-made-easy' ), __( 'Footnotes', 'footnotes-made-easy' ), 'manage_options', 'footnotes-options-page', array( $this, 'footnotes_options_page' ) );
 
-		add_action( 'load-' . $footnotes_hook, array( $this, 'footnotes_help' ) );
+		add_action( 'load-' . $footnotes_hook, array( $this, 'remove_help_tabs' ) );
 
 	}
 
@@ -683,55 +692,40 @@ class swas_wp_footnotes {
 	}
 
 	/**
-	* Admin Footer Text
+	* Remove Footer Text
 	*
-	* Modifies the left admin footer text on the plugin's settings page
+	* Removes the default WordPress admin footer text on the plugin's settings page
 	*
-	* @since	3.0.8
+	* @since	3.1.4
 	*
 	* @param	string	$footer_text	The existing footer text
-	* @return	string					Modified footer text
+	* @return	string					Empty string on our settings page, unchanged elsewhere
 	*/
 
-	function admin_footer_text( $footer_text ) {
-		
-		// Only on our settings page
+	function remove_footer_text( $footer_text ) {
 		$screen = get_current_screen();
 		if ( $screen && $screen->id === 'settings_page_footnotes-options-page' ) {
-			$footer_text = sprintf(
-				/* translators: %s: Five star rating link */
-				__( 'If you like <strong>Footnotes Made Easy</strong>, please leave us a %s rating. Thank you so much in advance!', 'footnotes-made-easy' ),
-				'<a href="https://wordpress.org/support/plugin/footnotes-made-easy/reviews/" target="_blank" rel="noopener noreferrer">★★★★★</a>'
-			);
+			return '';
 		}
-		
 		return $footer_text;
 	}
 
 	/**
-	* Admin Footer Version
+	* Remove Footer Version
 	*
-	* Modifies the right admin footer version on the plugin's settings page
+	* Removes the default WordPress version text on the plugin's settings page
 	*
-	* @since	3.0.8
+	* @since	3.1.4
 	*
 	* @param	string	$footer_version	The existing footer version text
-	* @return	string					Modified footer version text
+	* @return	string					Empty string on our settings page, unchanged elsewhere
 	*/
 
-	function admin_footer_version( $footer_version ) {
-		
-		// Only on our settings page
+	function remove_footer_version( $footer_version ) {
 		$screen = get_current_screen();
 		if ( $screen && $screen->id === 'settings_page_footnotes-options-page' ) {
-			$plugin_data = get_plugin_data( __FILE__ );
-			$footer_version = sprintf(
-				/* translators: %s: Plugin version number */
-				__( 'Version %s', 'footnotes-made-easy' ),
-				$plugin_data['Version']
-			);
+			return '';
 		}
-		
 		return $footer_version;
 	}
 }
