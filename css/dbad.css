@@ -1,1 +1,533 @@
+/**
+ * Footnotes Made Easy — Admin Settings UI
+ * Redesigned settings page styles.
+ * Scoped to #fme-settings-wrap to avoid bleeding into WP core styles.
+ */
 
+/* ── Reset & Base ─────────────────────────────────────────── */
+#fme-settings-wrap *,
+#fme-settings-wrap *::before,
+#fme-settings-wrap *::after {
+    box-sizing: border-box;
+}
+
+/* ── Outer wrapper ────────────────────────────────────────── */
+#fme-settings-wrap {
+    --fme-accent:        #534AB7;
+    --fme-accent-hover:  #3C3489;
+    --fme-accent-light:  rgba(83, 74, 183, 0.10);
+    --fme-success:       #1D9E75;
+    --fme-warning-bg:    #FFFBEB;
+    --fme-warning-border:#FDE68A;
+    --fme-warning-text:  #92400E;
+    --fme-surface:       #ffffff;
+    --fme-bg:            #F4F5F7;
+    --fme-border:        #E2E4E9;
+    --fme-border-input:  #D0D3DC;
+    --fme-text:          #1A1A2E;
+    --fme-text-muted:    #6B7080;
+    --fme-radius-sm:     6px;
+    --fme-radius-md:     8px;
+    --fme-radius-lg:     12px;
+    --fme-shadow:        0 1px 3px rgba(0,0,0,0.08);
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--fme-bg);
+    padding-bottom: 3rem;
+    min-height: calc(100vh - 32px); /* 32px = WP admin bar */
+    margin-left:  0;
+    margin-right: 0;
+    margin-top:   0;
+}
+
+/* ── Full-bleed background fix ────────────────────────────── */
+/*
+ * Force the WP content column and body to share the same bg colour
+ * so no white/grey gap appears below #fme-settings-wrap.
+ * If --fme-bg ever changes, update these two hex values to match.
+ */
+.settings_page_footnotes-options-page #wpbody-content {
+    background: #F4F5F7;
+    min-height: calc(100vh - 32px);
+}
+
+.settings_page_footnotes-options-page #wpbody {
+    background: #F4F5F7;
+}
+
+/* ── Top navigation bar ───────────────────────────────────── */
+.fme-topbar {
+    background: var(--fme-surface);
+    border-bottom: 1px solid var(--fme-border);
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    position: sticky;
+    top: 32px; /* WP admin bar */
+    z-index: 100;
+}
+
+.fme-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.875rem 0;
+    margin-right: 1.25rem;
+    text-decoration: none;
+}
+
+.fme-brand-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--fme-radius-sm);
+    background: var(--fme-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fme-brand-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: #fff;
+}
+
+.fme-brand-name {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--fme-text);
+    white-space: nowrap;
+}
+
+.fme-tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.9rem 1rem;
+    font-size: 13.5px;
+    color: var(--fme-text-muted);
+    cursor: pointer;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+    font-family: inherit;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fme-tab-btn:hover { color: var(--fme-text); }
+
+.fme-tab-btn.fme-active {
+    color: var(--fme-accent);
+    border-bottom-color: var(--fme-accent);
+    font-weight: 500;
+}
+
+.fme-tab-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    opacity: 0.75;
+}
+
+/* ── Content area ─────────────────────────────────────────── */
+.fme-content {
+    padding: 1.25rem 1.5rem;
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ── Rating banner ────────────────────────────────────────── */
+.fme-rating-banner {
+    background: var(--fme-surface);
+    border: 1px solid var(--fme-border);
+    border-radius: var(--fme-radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--fme-shadow);
+    overflow: hidden;
+    transition: opacity 0.3s, max-height 0.4s, margin 0.4s, padding 0.4s;
+    max-height: 120px;
+}
+
+.fme-rating-banner.fme-dismissed {
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.fme-rating-heart { font-size: 20px; flex-shrink: 0; }
+
+.fme-rating-text {
+    flex: 1;
+    font-size: 13px;
+    color: var(--fme-text);
+    line-height: 1.55;
+}
+
+.fme-rating-stars { color: #F59E0B; letter-spacing: 1px; }
+
+.fme-rate-btn {
+    background: var(--fme-accent);
+    color: #fff !important;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--fme-radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none !important;
+    display: inline-block;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.fme-rate-btn:hover { background: var(--fme-accent-hover); }
+
+.fme-dismiss-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--fme-text-muted);
+    font-size: 22px;
+    line-height: 1;
+    padding: 4px 6px;
+    flex-shrink: 0;
+    transition: color 0.15s;
+    font-family: inherit;
+}
+
+.fme-dismiss-btn:hover { color: var(--fme-text); }
+
+/* ── Page header ──────────────────────────────────────────── */
+.fme-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+}
+
+.fme-page-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--fme-text);
+    margin: 0 0 4px;
+}
+
+.fme-page-sub {
+    font-size: 13px;
+    color: var(--fme-text-muted);
+    margin: 0;
+}
+
+.fme-save-btn {
+    background: var(--fme-accent);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--fme-radius-md);
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: background 0.15s;
+    font-family: inherit;
+    flex-shrink: 0;
+}
+
+.fme-save-btn:hover { background: var(--fme-accent-hover); }
+
+.fme-save-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+/* ── Tab panels ───────────────────────────────────────────── */
+.fme-tab-panel { display: none; }
+
+.fme-tab-panel.fme-active {
+    display: block;
+    animation: fmeFadeIn 0.18s ease;
+}
+
+@keyframes fmeFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Cards ────────────────────────────────────────────────── */
+.fme-card {
+    background: var(--fme-surface);
+    border: 1px solid var(--fme-border);
+    border-radius: var(--fme-radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--fme-shadow);
+}
+
+.fme-card-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--fme-text);
+    margin: 0 0 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--fme-border);
+}
+
+/* ── Field rows ───────────────────────────────────────────── */
+.fme-field-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 1rem;
+    align-items: start;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--fme-border);
+}
+
+.fme-field-row:last-child { border-bottom: none; padding-bottom: 0; }
+.fme-field-row:first-child { padding-top: 0; }
+
+.fme-field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fme-text);
+    padding-top: 8px;
+}
+
+.fme-field-hint {
+    font-size: 12px;
+    color: var(--fme-text-muted);
+    margin-top: 4px;
+    line-height: 1.55;
+    font-weight: 400;
+}
+
+.fme-field-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* ── Inputs ───────────────────────────────────────────────── */
+#fme-settings-wrap input[type="text"],
+#fme-settings-wrap input[type="number"],
+#fme-settings-wrap select,
+#fme-settings-wrap textarea {
+    background: var(--fme-surface);
+    border: 1px solid var(--fme-border-input);
+    border-radius: var(--fme-radius-md);
+    padding: 7px 10px;
+    font-size: 13px;
+    color: var(--fme-text);
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+    margin: 0;
+}
+
+#fme-settings-wrap input[type="text"]:focus,
+#fme-settings-wrap input[type="number"]:focus,
+#fme-settings-wrap select:focus,
+#fme-settings-wrap textarea:focus {
+    outline: none;
+    border-color: var(--fme-accent);
+    box-shadow: 0 0 0 3px var(--fme-accent-light);
+}
+
+#fme-settings-wrap textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: 'Courier New', monospace;
+    font-size: 12.5px;
+}
+
+.fme-inline-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.fme-inline-inputs input[type="text"] { width: 72px !important; }
+.fme-inline-inputs select { width: 145px !important; }
+.fme-input-sm  { width: 80px !important; }
+.fme-input-md  { width: 130px !important; }
+.fme-input-num { width: 78px !important; }
+
+.fme-small-hint {
+    font-size: 12px;
+    color: var(--fme-text-muted);
+    line-height: 1.5;
+}
+
+/* ── Toggle rows ──────────────────────────────────────────── */
+.fme-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--fme-border);
+}
+
+.fme-toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+.fme-toggle-row:first-child { padding-top: 0; }
+
+.fme-toggle-label { flex: 1; padding-right: 1.5rem; }
+
+.fme-toggle-label-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fme-text);
+}
+
+.fme-toggle-label-hint {
+    font-size: 12px;
+    color: var(--fme-text-muted);
+    margin-top: 3px;
+    line-height: 1.5;
+}
+
+.fme-toggle-switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+    display: block;
+}
+
+.fme-toggle-switch input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+    margin: 0;
+}
+
+.fme-toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: var(--fme-border-input);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.fme-toggle-switch input:checked + .fme-toggle-track {
+    background: var(--fme-accent);
+}
+
+.fme-toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+    pointer-events: none;
+}
+
+.fme-toggle-switch input:checked ~ .fme-toggle-thumb {
+    transform: translateX(18px);
+}
+
+/* ── Warning banner ───────────────────────────────────────── */
+.fme-warning-banner {
+    background: var(--fme-warning-bg);
+    border: 1px solid var(--fme-warning-border);
+    border-radius: var(--fme-radius-md);
+    padding: 0.875rem 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.fme-warning-icon {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    margin-top: 2px;
+    fill: var(--fme-warning-text);
+}
+
+.fme-warning-text {
+    font-size: 13px;
+    color: var(--fme-warning-text);
+    line-height: 1.55;
+}
+
+/* ── Success notice ───────────────────────────────────────── */
+.fme-notice-saved {
+    background: #ECFDF5;
+    border: 1px solid #6EE7B7;
+    border-radius: var(--fme-radius-md);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #065F46;
+    font-weight: 500;
+    transition: opacity 0.6s ease, max-height 0.5s ease, margin-bottom 0.5s ease, padding 0.5s ease;
+    overflow: hidden;
+    max-height: 80px;
+}
+
+.fme-notice-saved svg {
+    width: 16px;
+    height: 16px;
+    fill: #059669;
+    flex-shrink: 0;
+}
+
+.fme-notice-saved.fme-notice-hiding {
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+/* ── Full-width topbar fix ────────────────────────────────── */
+/*
+ * Remove padding from the WP .wrap parent and compensate on
+ * the topbar itself. overflow-x: hidden kills any stray scroll.
+ */
+.settings_page_footnotes-options-page #wpbody-content .wrap {
+    padding-top:   0 !important;
+    margin-top:    0 !important;
+    padding-left:  0 !important;
+    padding-right: 0 !important;
+    overflow-x:    hidden;
+}
+
+/* Hide WP's own .wrap h1 title — our topbar has the branding */
+.settings_page_footnotes-options-page #wpbody-content > .wrap > h1 {
+    display: none !important;
+}
+
+/* ── Form footer (bottom save button) ────────────────────── */
+.fme-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+}
