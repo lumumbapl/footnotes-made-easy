@@ -46,6 +46,7 @@
 
         <?php wp_nonce_field( 'footnotes-nonce', 'footnotes_nonce' ); ?>
         <input type="hidden" name="save_footnotes_made_easy_options" value="1">
+        <input type="hidden" name="fme_active_tab" id="fme-active-tab-input" value="<?php echo esc_attr( isset( $_POST['fme_active_tab'] ) ? sanitize_key( $_POST['fme_active_tab'] ) : 'display' ); ?>">
 
         <div class="fme-content">
 
@@ -453,21 +454,32 @@
         advanced:  { title: '<?php echo esc_js( __( 'Advanced settings', 'footnotes-made-easy' ) ); ?>',  sub: '<?php echo esc_js( __( 'Modify footnote delimiter tags — changes require updating all existing posts.', 'footnotes-made-easy' ) ); ?>' }
     };
 
-    var btnEls  = document.querySelectorAll('.fme-tab-btn');
-    var titleEl = document.getElementById('fme-tab-title');
-    var subEl   = document.getElementById('fme-tab-sub');
+    var btnEls   = document.querySelectorAll('.fme-tab-btn');
+    var titleEl  = document.getElementById('fme-tab-title');
+    var subEl    = document.getElementById('fme-tab-sub');
+    var tabInput = document.getElementById('fme-active-tab-input');
+
+    function activateTab( id ) {
+        if ( ! tabs[id] ) { id = 'display'; }
+        btnEls.forEach(function (b) { b.classList.remove('fme-active'); });
+        var activeBtn = document.querySelector('.fme-tab-btn[data-tab="' + id + '"]');
+        if ( activeBtn ) { activeBtn.classList.add('fme-active'); }
+        document.querySelectorAll('.fme-tab-panel').forEach(function (p) { p.classList.remove('fme-active'); });
+        var activePanel = document.getElementById('fme-panel-' + id);
+        if ( activePanel ) { activePanel.classList.add('fme-active'); }
+        titleEl.textContent = tabs[id].title;
+        subEl.textContent   = tabs[id].sub;
+        if ( tabInput ) { tabInput.value = id; }
+    }
 
     btnEls.forEach(function (btn) {
         btn.addEventListener('click', function () {
-            var id = btn.getAttribute('data-tab');
-            btnEls.forEach(function (b) { b.classList.remove('fme-active'); });
-            btn.classList.add('fme-active');
-            document.querySelectorAll('.fme-tab-panel').forEach(function (p) { p.classList.remove('fme-active'); });
-            document.getElementById('fme-panel-' + id).classList.add('fme-active');
-            titleEl.textContent = tabs[id].title;
-            subEl.textContent   = tabs[id].sub;
+            activateTab( btn.getAttribute('data-tab') );
         });
     });
+
+    /* ── Restore the active tab after a save ────────── */
+    activateTab( tabInput ? tabInput.value : 'display' );
 
     /* ── Auto-dismiss saved notice after 4 s ───────── */
     var notice = document.getElementById('fme-notice-saved');
