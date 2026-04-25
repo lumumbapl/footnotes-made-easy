@@ -531,3 +531,239 @@
     padding-top: 0.5rem;
     margin-top: 0.25rem;
 }
+
+/* ── Responsive topbar — small screens ───────────────────── */
+/*
+ * On narrow viewports (WP collapsed sidebar ≈ 783 px breakpoint,
+ * folded/tablet devices even narrower) the topbar can overflow.
+ * Strategy: let the tab strip scroll horizontally inside the bar
+ * while the brand stays pinned left. No hamburger needed.
+ *
+ * Mirrors the Media Sweep plugin approach visible in QA screenshots.
+ */
+
+/* Shared across all narrow widths: make the topbar a two-row flex
+   container so brand and tabs are clearly separated. */
+@media (max-width: 900px) {
+
+    .fme-topbar {
+        flex-wrap: nowrap;           /* keep everything on one line     */
+        padding: 0;                  /* remove side padding; tabs supply their own */
+        overflow: hidden;            /* clip anything that tries to escape  */
+    }
+
+    /* Brand: fixed-width pill on the left, never shrinks or scrolls */
+    .fme-brand {
+        flex-shrink: 0;
+        padding: 0.75rem 14px;
+        margin-right: 0;
+        border-right: 1px solid var(--fme-border);
+    }
+
+    /* Hide the text label; keep the icon so the brand still reads */
+    .fme-brand-name {
+        display: none;
+    }
+
+    /* Tab strip: takes the remaining width and scrolls horizontally.
+       "momentum" scrolling on iOS, hidden scrollbar on all browsers. */
+    .fme-topbar .fme-tab-btn:first-of-type,
+    .fme-topbar .fme-tab-btn {
+        /* Tabs live directly inside .fme-topbar; we turn the topbar
+           itself into a scroll container via the rule above, so we
+           just need the tabs to not shrink. */
+        flex-shrink: 0;
+        padding: 0.85rem 0.875rem;
+        font-size: 13px;
+    }
+
+    /* Wrap the tab buttons in a scrollable region.
+       Because the HTML doesn't have a wrapper div we use a pseudo
+       approach: allow the topbar to scroll while brand is sticky. */
+    .fme-topbar {
+        display: flex;
+        align-items: stretch;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;          /* Firefox: hide scrollbar    */
+    }
+    .fme-topbar::-webkit-scrollbar {
+        display: none;                  /* Chrome/Safari: hide scrollbar */
+    }
+
+    /* Re-pin the brand so it doesn't scroll away.
+       Uses sticky positioning inside the flex row. */
+    .fme-brand {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: var(--fme-surface);
+    }
+}
+
+/* Tighten further on very small screens (phones in landscape,
+   folded devices, the Asus Zenbook Fold at ~853 px logical) */
+@media (max-width: 600px) {
+
+    .fme-tab-btn {
+        padding: 0.8rem 0.75rem;
+        font-size: 12.5px;
+        gap: 4px;
+    }
+
+    /* Show only the icon on the smallest breakpoint — keeps each
+       button compact while remaining fully tappable (≥ 44 px tall). */
+    .fme-tab-btn span,
+    .fme-tab-btn > :not(svg) {
+        display: none;
+    }
+
+    /* Widen the icon slightly so icon-only buttons read clearly */
+    .fme-tab-btn svg {
+        width: 16px;
+        height: 16px;
+        opacity: 1;
+    }
+
+    /* Active state: underline accent still visible */
+    .fme-tab-btn.fme-active svg {
+        opacity: 1;
+    }
+}
+
+/* ── Responsive field rows — small screens ───────────────── */
+/*
+ * Root cause: grid-template-columns: 200px 1fr
+ * The fixed 200px label column leaves too little room for the input
+ * column on narrow viewports, causing fields to overflow the card.
+ *
+ * Fix: stack label above input at ≤ 600px (single-column layout).
+ * No layout change on desktop — only narrow screens are affected.
+ */
+@media (max-width: 600px) {
+
+    .fme-field-row {
+        grid-template-columns: 1fr;  /* single column: label above input */
+        gap: 0.4rem;
+    }
+
+    /* Give the label a little breathing room below the hint text */
+    .fme-field-label {
+        padding-top: 0;
+    }
+
+    /* Inputs already have width: 100% so they fill the card nicely.
+       Remove any explicit width overrides that were fine on desktop
+       but look awkward stacked (e.g. fme-input-sm, fme-input-md). */
+    #fme-settings-wrap .fme-input-sm,
+    #fme-settings-wrap .fme-input-md,
+    #fme-settings-wrap .fme-input-num {
+        width: 100% !important;
+    }
+
+    /* Inline input groups (colour + select combos etc.) should also
+       flow to full width rather than wrapping at their fixed sizes. */
+    .fme-inline-inputs input[type="text"],
+    .fme-inline-inputs select {
+        width: 100% !important;
+    }
+}
+
+/* A slightly wider breakpoint just for the label-column width —
+   shrink from 200px → 150px in the 600–780px range so cards don't
+   feel cramped on tablets with the WP sidebar collapsed. */
+@media (min-width: 601px) and (max-width: 780px) {
+
+    .fme-field-row {
+        grid-template-columns: 150px 1fr;
+    }
+}
+
+/* ── Sticky topbar fix ────────────────────────────────────── */
+/*
+ * PROBLEM: `overflow-x: hidden` on .wrap (set above for full-bleed)
+ * creates a new scroll container, which silently kills
+ * `position: sticky` on .fme-topbar — the browser can no longer
+ * measure scroll relative to the viewport.
+ *
+ * FIX: Replace overflow-x: hidden with overflow-x: clip.
+ * `clip` prevents overflow painting without establishing a scroll
+ * container, so sticky works correctly again. Supported in all
+ * browsers that matter for WP admin (Chrome 90+, Firefox 81+,
+ * Safari 16+).
+ *
+ * Also fix the `top` offset on small screens: WP collapses its
+ * admin bar from 32px → 46px tall on narrow viewports (≤782px),
+ * then hides it entirely below 600px in some configs.
+ */
+
+/* Override the overflow-x: hidden set in the full-width topbar fix */
+.settings_page_footnotes-options-page #wpbody-content .wrap {
+    overflow-x: clip !important;  /* clip ≠ hidden: no scroll container */
+}
+
+/* WP admin bar is 46px tall at ≤782px */
+@media (max-width: 782px) {
+    .fme-topbar {
+        top: 46px;
+    }
+}
+
+/* WP admin bar is hidden (moved off-screen) at ≤600px */
+@media (max-width: 600px) {
+    .fme-topbar {
+        top: 0;
+    }
+}
+
+/* ── Rating banner responsive ─────────────────────────────── */
+/*
+ * On small screens the banner becomes a 3-column flex row that
+ * looks cramped. Desired layout:
+ *   - Close (×) button pinned top-right
+ *   - Heart + text stacked naturally
+ *   - "Rate Plugin" button full-width below the text
+ */
+@media (max-width: 600px) {
+
+    .fme-rating-banner {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        position: relative;          /* anchor for the dismiss button   */
+        padding: 0.9rem 1rem 1rem;
+        max-height: none;            /* allow taller collapsed height   */
+        gap: 8px;
+    }
+
+    /* Bump the transition max-height so the dismiss animation still
+       works now that the banner is taller on mobile */
+    .fme-rating-banner:not(.fme-dismissed) {
+        max-height: 200px;
+    }
+
+    .fme-rating-heart {
+        padding-top: 2px;
+    }
+
+    .fme-rating-text {
+        /* Take all space except the heart icon; dismiss btn is absolute */
+        flex: 1;
+        padding-right: 2rem;         /* clear the absolute dismiss btn  */
+    }
+
+    /* Full-width Rate Plugin button below text */
+    .fme-rate-btn {
+        width: 100%;
+        text-align: center;
+        order: 3;                    /* push after heart + text          */
+        padding: 10px 16px;
+    }
+
+    /* Pin dismiss button to top-right of the banner card */
+    .fme-dismiss-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        padding: 2px 4px;
+    }
+}
