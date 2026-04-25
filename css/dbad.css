@@ -456,14 +456,14 @@
     margin-bottom: 1rem;
     display: flex;
     gap: 10px;
-    align-items: flex-start;
+    align-items: center;
 }
 
 .fme-warning-icon {
     width: 16px;
     height: 16px;
     min-width: 16px;
-    margin-top: 2px;
+    flex-shrink: 0;
     fill: var(--fme-warning-text);
 }
 
