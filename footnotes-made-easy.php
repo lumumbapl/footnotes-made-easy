@@ -702,7 +702,7 @@ class swas_wp_footnotes {
 	*
 	* Removes the default WordPress admin footer text on the plugin's settings page
 	*
-	* @since	4.0
+	* @since	3.1.4
 	*
 	* @param	string	$footer_text	The existing footer text
 	* @return	string					Empty string on our settings page, unchanged elsewhere
@@ -721,7 +721,7 @@ class swas_wp_footnotes {
 	*
 	* Removes the default WordPress version text on the plugin's settings page
 	*
-	* @since	4.0
+	* @since	3.1.4
 	*
 	* @param	string	$footer_version	The existing footer version text
 	* @return	string					Empty string on our settings page, unchanged elsewhere
