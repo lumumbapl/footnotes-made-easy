@@ -8,8 +8,11 @@
  * @package footnotes-made-easy
  * @since   1.0
  */
-?>
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <div id="fme-settings-wrap">
 
     <!-- ── Top navigation bar ───────────────────────── -->
