@@ -864,14 +864,26 @@
 .fme-about-badge-green { background: #eaf3de; color: #27500a; }
 .fme-about-badge-amber { background: #faeeda; color: #633806; }
 
-/* Tutorials slider */
+/* ── Tutorials slider ─────────────────────────────────────── */
 .fme-about-section { margin-bottom: 1rem; }
-.fme-about-slider-wrap { position: relative; }
+
+/*
+ * The slider wrap clips cards as they slide out of view.
+ * overflow: hidden is required here — unlike on .wrap above, this
+ * element is not a sticky ancestor so hidden doesn't kill anything.
+ * position: relative is the anchor for the prev/next buttons.
+ */
+.fme-about-slider-wrap {
+    position: relative;
+    overflow: hidden; /* clips cards that have slid out of the visible 3-up window */
+}
+
 .fme-about-tutorials {
     display: flex;
     gap: 12px;
-    overflow: hidden;
+    overflow: hidden; /* fallback when no slider wrap is present (≤3 videos) */
 }
+
 .fme-about-tutorial {
     flex: 0 0 calc(33.333% - 8px);
     border: 0.5px solid #e0e0e0;
@@ -879,14 +891,18 @@
     transition: border-color 0.15s;
 }
 .fme-about-tutorial:hover { border-color: #7f77dd; }
+
+/* YouTube thumbnail */
 .fme-about-thumb {
     position: relative; aspect-ratio: 16/9;
     display: flex; align-items: center; justify-content: center;
-    overflow: hidden; background: #eeedfe;
+    overflow: hidden; background: #eeedfe; /* fallback while img loads */
 }
 .fme-about-thumb img {
     width: 100%; height: 100%; object-fit: cover; display: block;
 }
+
+/* Play button overlay */
 .fme-about-play {
     position: absolute;
     width: 44px; height: 44px; background: rgba(83,74,183,0.9);
@@ -895,10 +911,12 @@
 }
 .fme-about-tutorial:hover .fme-about-play { background: #534ab7; }
 .fme-about-play svg { width: 16px; height: 16px; fill: #fff; margin-left: 3px; }
+
 .fme-about-tut-info  { padding: 10px 12px; }
 .fme-about-tut-title { font-size: 12px; font-weight: 500; color: #1d2327; margin: 0 0 3px; line-height: 1.4; }
 .fme-about-tut-meta  { font-size: 11px; color: #999; margin: 0; }
-/* Slider nav buttons */
+
+/* Slider prev / next buttons */
 .fme-slider-btn {
     position: absolute; top: 38%; transform: translateY(-50%);
     width: 28px; height: 28px; border-radius: 50%;
@@ -911,13 +929,17 @@
 .fme-slider-btn-prev { left: -14px; }
 .fme-slider-btn-next { right: -14px; }
 .fme-slider-btn[disabled] { opacity: 0.3; pointer-events: none; }
+
+/* Dots navigation */
 .fme-slider-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
 .fme-slider-dot {
-    width: 6px; height: 6px; border-radius: 50%; background: #d0cef7; cursor: pointer; transition: background 0.15s;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #d0cef7; border: none; padding: 0;
+    cursor: pointer; transition: background 0.15s;
 }
 .fme-slider-dot.active { background: #534ab7; }
 
-/* Links row */
+/* ── Links row ────────────────────────────────────────────── */
 .fme-about-links {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -939,9 +961,18 @@
 .fme-about-link-sub   { font-size: 11px; color: #666; margin: 2px 0 0; }
 .fme-about-link-arrow { margin-left: auto; color: #999; font-size: 16px; }
 
+/* ── About tab responsive ─────────────────────────────────── */
 @media ( max-width: 782px ) {
     .fme-about-metrics,
     .fme-about-grid,
-    .fme-about-tutorials,
     .fme-about-links { grid-template-columns: 1fr; }
+
+    /*
+     * On narrow screens the 3-up layout collapses to single-column.
+     * Cards go full-width so each one fills the available space.
+     * The slider JS still works — it just steps through full-width cards.
+     */
+    .fme-about-tutorial {
+        flex: 0 0 100%;
+    }
 }
