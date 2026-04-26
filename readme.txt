@@ -20,9 +20,9 @@ Footnotes Made Easy is a simple, but powerful, method of adding footnotes to you
 * Simple footnote insertion via double parentheses
 * Combine identical notes
 * Solution for paginated posts
-* Suppress Footnotes on specific page types
-* Option to display ‘pretty’ tooltips using jQuery
-* Lots of configuration options
+* Suppress footnotes on specific page types and custom URLs
+* Option to display 'pretty' tooltips using jQuery
+* Exclude footnotes from specific post categories
 * And much, much more!
 
 **Footnotes Made Easy is a fork of [WP Footnotes](https://github.com/drzax/wp-footnotes "Github - wp-footnotes"), a plugin by Simon Elvery which was abandoned some years ago**.
@@ -43,11 +43,17 @@ The footnote will then appear at the bottom of your post/page.
 
 == Options ==
 
-You have a fair few options on how the identifier links, footnotes and back-links look which can be found in the WordPress admin area under 'Settings -> Footnotes'.
+The settings page is organised into five tabs for easier navigation:
+
+* **Display** — Control footnote identifier format, back-link style, header/footer text, and tooltip behaviour.
+* **Behaviour** — Configure footnote processing options such as combining identical notes and execution priority.
+* **Suppress** — Choose which page types (home, archives, search, feeds, previews) should not display footnotes.
+* **Advanced** — Exclude footnotes from specific URLs or post categories.
+* **About** — View plugin stats, version information, video tutorials, and links to documentation and support.
 
 == Paginated Posts ==
 
-Some of you seem to like the paginating post, which is kind of problematic. By default, each page of your post will have its own set of footnotes at the bottom and the numbering will start again from 1 for each page.
+Some of you seem to like paginating posts, which is kind of problematic. By default, each page of your post will have its own set of footnotes at the bottom and the numbering will start again from 1 for each page.
 
 The only way to get around this is to know how many posts are on each page and tell Footnotes Made Easy what number you want the list to start at for each of the pages. So at some point on each page (that is, between each `<!--nextpage-->` tag) you need to add a tag to let the plugin know what number the footnotes on this page should start at. The tag should look like this `<!--startnum=5-->` where "5" is the number you want the footnotes for this page to start at.
 
@@ -68,9 +74,9 @@ Footnotes Made Easy is fully internationalized, and ready for translations.
 * [Annabelle W](https://profiles.wordpress.org/yayannabelle/), English (UK)
 * [maboroshin](https://profiles.wordpress.org/maboroshin/), Japanese
 * [Laurent MILLET](https://profiles.wordpress.org/wplmillet/), French (France)
-* [B. Cansmile Cha](https://profiles.wordpress.org/cansmile/), Korean 
+* [B. Cansmile Cha](https://profiles.wordpress.org/cansmile/), Korean
 * [danbilabs](https://profiles.wordpress.org/danbilabs/), Korean
-* [denelan](https://profiles.wordpress.org/danbilabs/), Dutch 
+* [denelan](https://profiles.wordpress.org/danbilabs/), Dutch
 * [Peter Smits](https://profiles.wordpress.org/psmits1567/), Dutch
 * [Pieterjan Deneys](https://profiles.wordpress.org/nekojonez/), Dutch (Belgium)
 * [Alex Grey](https://profiles.wordpress.org/alexvgrey/), Russian
@@ -88,7 +94,7 @@ Voila! It's ready to go.
 
 == Frequently Asked Questions ==
 
-= How do I add a footnote to my post or page? = 
+= How do I add a footnote to my post or page? =
 
 To add a footnote, surround the footnote text with the opening and closing footnote markers specified in the plugin settings. By default, these are `(( and ))`.
 
@@ -98,19 +104,34 @@ Yes, it can. The easiest way is to use the CSS editor in your theme customizer. 
 
 = Can I disable footnotes on specific parts of my website? =
 
-Yes, the plugin provides options to disable footnotes on the home page, archives, search results, feeds, and previews.
+Yes. The Suppress tab lets you disable footnotes on the home page, archives, search results, feeds, and previews. The Advanced tab lets you exclude footnotes from specific URLs or post categories.
+
+= Does the plugin remove its data when uninstalled? =
+
+Yes. Deleting the plugin via the WordPress admin removes all stored settings and user meta from the database — nothing is left behind.
 
 == Screenshots ==
 
-1. The Settings screen with advanced settings shown
-2. Continuation of the settings screen with advanced settings shown
-3. The post editor page showing how to insert footnotes
-4. Live preview of a post page showing footnotes within the page
-5. Live preview of a post page showing the list of footnotes at the bottom of the post
+1. The redesigned tabbed settings interface — Display tab
+2. The Behaviour and Suppress settings tabs
+3. The Advanced tab for URL and category exclusions
+4. The About tab showing plugin stats, version status, and video tutorials
+5. The post editor showing how to insert footnotes
+6. Live preview of a post showing footnotes within the page
+7. Live preview of a post showing the footnote list at the bottom
 
 == Changelog ==
 
 I use semantic versioning, with the first release being 1.0.
+
+= 3.2.0 [April 2026] =
+* Enhancement: Fully redesigned tabbed settings interface (Display, Behaviour, Suppress, Advanced, About)
+* Enhancement: About tab with live plugin usage stats (footnote counts across posts and pages)
+* Enhancement: WordPress and plugin version status shown on the About tab with one-click update prompts
+* Enhancement: Video tutorials section embedded in the About tab
+* Enhancement: Quick-links to Documentation, Support forum, and GitHub repository on the About tab
+* Enhancement: Rating banner to encourage reviews, with snooze and dismiss options
+* Fix: uninstall.php now removes all plugin data including user meta (fme_rating_banner, fme_banner_seeded_version)
 
 = 3.1.0 [November 29, 2025] =
 * Compatibility: WordPress 6.9 compatibility test passed
@@ -140,6 +161,5 @@ I use semantic versioning, with the first release being 1.0.
 
 == Upgrade Notice ==
 
-= 3.0.9 [November 8, 2025] =
-* Fix: Footnotes header now correctly appears before the list (not inside it)
-* Fix: Restored 'footnote-link' CSS class for backward compatibility with custom styles
+= 3.2.0 =
+* Redesigned settings UI with tabbed navigation, an About tab with live stats and video tutorials, and a complete uninstall cleanup fix.
