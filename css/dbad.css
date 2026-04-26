@@ -165,6 +165,11 @@
     padding-bottom: 0;
 }
 
+/* Hidden server-side: no transition, no flash on page load */
+.fme-rating-banner.fme-banner-hidden {
+    display: none;
+}
+
 .fme-rating-heart { font-size: 20px; flex-shrink: 0; }
 
 .fme-rating-text {
