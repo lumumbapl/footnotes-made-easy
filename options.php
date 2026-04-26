@@ -23,7 +23,10 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <path d="M3 4h14v2H3zm0 5h9v2H3zm0 5h11v2H3z"/>
                 </svg>
             </span>
-            <span class="fme-brand-name"><?php esc_html_e( 'Footnotes Made Easy', 'footnotes-made-easy' ); ?></span>
+            <span class="fme-brand-text">
+                <span class="fme-brand-name"><?php esc_html_e( 'Footnotes Made Easy', 'footnotes-made-easy' ); ?></span>
+                <span class="fme-brand-edition fme-badge-new"><?php esc_html_e( '100% FREE', 'footnotes-made-easy' ); ?></span>
+            </span>
         </span>
 
         <button type="button" class="fme-tab-btn fme-active" data-tab="display">
@@ -377,7 +380,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </div><!-- /.fme-card -->
 
                 <div class="fme-card">
-                    <h3 class="fme-card-title"><?php esc_html_e( 'Exclude specific URLs', 'footnotes-made-easy' ); ?></h3>
+                    <h3 class="fme-card-title"><?php esc_html_e( 'Exclude specific URLs', 'footnotes-made-easy' ); ?> <span class="fme-badge-new"><?php esc_html_e( 'new', 'footnotes-made-easy' ); ?></span></h3>
 
                     <div class="fme-field-row">
                         <div class="fme-field-label">
@@ -385,8 +388,23 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <div class="fme-field-hint"><?php esc_html_e( 'Enter URLs or paths where footnotes should be completely disabled (one per line). Both full URLs and path slugs are accepted. Footnote shortcodes on these pages will be silently removed.', 'footnotes-made-easy' ); ?></div>
                         </div>
                         <div class="fme-field-input">
-                            <textarea name="exclude_urls" id="exclude_urls" rows="5"><?php echo esc_textarea( $this->current_options['exclude_urls'] ?? '' ); ?></textarea>
+                            <textarea name="exclude_urls" id="exclude_urls" rows="5" placeholder="/about-us/&#10;/private-page/&#10;https://yoursite.com/members/"><?php echo esc_textarea( $this->current_options['exclude_urls'] ?? '' ); ?></textarea>
                             <span class="fme-small-hint"><?php esc_html_e( 'Examples: /about-us/ or https://yoursite.com/private-page/', 'footnotes-made-easy' ); ?></span>
+                        </div>
+                    </div>
+                </div><!-- /.fme-card -->
+
+                <div class="fme-card">
+                    <h3 class="fme-card-title"><?php esc_html_e( 'Exclude specific categories', 'footnotes-made-easy' ); ?> <span class="fme-badge-new"><?php esc_html_e( 'new', 'footnotes-made-easy' ); ?></span></h3>
+
+                    <div class="fme-field-row">
+                        <div class="fme-field-label">
+                            <?php esc_html_e( 'Excluded categories', 'footnotes-made-easy' ); ?>
+                            <div class="fme-field-hint"><?php esc_html_e( 'Enter category slugs or IDs where footnotes should be suppressed (one per line). Applies to individual posts belonging to these categories, not just the category archive page.', 'footnotes-made-easy' ); ?></div>
+                        </div>
+                        <div class="fme-field-input">
+                            <textarea name="exclude_categories" id="exclude_categories" rows="5" placeholder="news&#10;tutorials&#10;42"><?php echo esc_textarea( $this->current_options['exclude_categories'] ?? '' ); ?></textarea>
+                            <span class="fme-small-hint"><?php esc_html_e( 'Examples: news or 42 (numeric ID)', 'footnotes-made-easy' ); ?></span>
                         </div>
                     </div>
                 </div><!-- /.fme-card -->
@@ -685,7 +703,6 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div><!-- /.fme-tutorials -->
 
                 </div><!-- /.fme-card tutorials -->
-
                 <!-- Documentation / Support / GitHub -->
                 <div class="fme-about-links">
 
