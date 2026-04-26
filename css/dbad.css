@@ -767,3 +767,181 @@
         padding: 2px 4px;
     }
 }
+
+/* ════════════════════════════════════════════════════════════
+   About tab
+════════════════════════════════════════════════════════════ */
+
+/* Metric cards row */
+.fme-about-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+.fme-about-metric {
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+.fme-about-metric:nth-child(1) { background: #eeedfe; }
+.fme-about-metric:nth-child(2) { background: #e1f5ee; }
+.fme-about-metric:nth-child(3) { background: #faece7; }
+.fme-about-metric-label {
+    font-size: 12px;
+    color: #534ab7;
+    margin: 0 0 6px;
+}
+.fme-about-metric:nth-child(2) .fme-about-metric-label { color: #0f6e56; }
+.fme-about-metric:nth-child(3) .fme-about-metric-label { color: #993c1d; }
+.fme-about-metric-value {
+    font-size: 26px;
+    font-weight: 500;
+    color: #1d2327;
+    margin: 0;
+}
+.fme-about-metric-desc {
+    font-size: 11px;
+    color: #666;
+    margin: 4px 0 0;
+}
+
+/* Two-column grid (stats + versions) */
+.fme-about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Stat rows inside content card */
+.fme-about-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 0.5px solid #e0e0e0;
+}
+.fme-about-stat-last { border-bottom: none; padding-bottom: 0; }
+.fme-about-stat-left { display: flex; align-items: center; gap: 10px; }
+.fme-about-stat-right { display: flex; align-items: center; gap: 12px; }
+.fme-about-stat-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.fme-about-stat-icon svg { width: 16px; height: 16px; }
+.fme-about-icon-purple { background: #eeedfe; }
+.fme-about-icon-purple svg { fill: #534ab7; }
+.fme-about-icon-teal   { background: #e1f5ee; }
+.fme-about-icon-teal svg   { fill: #0f6e56; }
+.fme-about-icon-coral  { background: #faece7; }
+.fme-about-icon-coral svg  { fill: #993c1d; }
+.fme-about-stat-label  { font-size: 13px; color: #1d2327; }
+.fme-about-stat-value  { font-size: 15px; font-weight: 500; color: #1d2327; }
+.fme-about-link        { font-size: 13px; color: #534ab7; text-decoration: none; }
+.fme-about-link:hover  { text-decoration: underline; }
+
+/* Version rows */
+.fme-about-version-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 0.5px solid #e0e0e0;
+}
+.fme-about-version-last { border-bottom: none; padding-bottom: 0; }
+.fme-about-check {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.fme-about-check svg { width: 12px; height: 12px; fill: #fff; }
+.fme-about-check-ok   { background: #534ab7; }
+.fme-about-check-warn { background: #854f0b; }
+.fme-about-version-info { flex: 1; }
+.fme-about-version-title { font-size: 13px; font-weight: 500; color: #1d2327; margin: 0; }
+.fme-about-version-sub   { font-size: 12px; color: #666; margin: 2px 0 0; }
+.fme-about-badge {
+    font-size: 11px; padding: 3px 10px;
+    border-radius: 20px; font-weight: 500; white-space: nowrap;
+}
+.fme-about-badge-green { background: #eaf3de; color: #27500a; }
+.fme-about-badge-amber { background: #faeeda; color: #633806; }
+
+/* Tutorials slider */
+.fme-about-section { margin-bottom: 1rem; }
+.fme-about-slider-wrap { position: relative; }
+.fme-about-tutorials {
+    display: flex;
+    gap: 12px;
+    overflow: hidden;
+}
+.fme-about-tutorial {
+    flex: 0 0 calc(33.333% - 8px);
+    border: 0.5px solid #e0e0e0;
+    border-radius: 8px; overflow: hidden; cursor: pointer;
+    transition: border-color 0.15s;
+}
+.fme-about-tutorial:hover { border-color: #7f77dd; }
+.fme-about-thumb {
+    position: relative; aspect-ratio: 16/9;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; background: #eeedfe;
+}
+.fme-about-thumb img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.fme-about-play {
+    position: absolute;
+    width: 44px; height: 44px; background: rgba(83,74,183,0.9);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.fme-about-tutorial:hover .fme-about-play { background: #534ab7; }
+.fme-about-play svg { width: 16px; height: 16px; fill: #fff; margin-left: 3px; }
+.fme-about-tut-info  { padding: 10px 12px; }
+.fme-about-tut-title { font-size: 12px; font-weight: 500; color: #1d2327; margin: 0 0 3px; line-height: 1.4; }
+.fme-about-tut-meta  { font-size: 11px; color: #999; margin: 0; }
+/* Slider nav buttons */
+.fme-slider-btn {
+    position: absolute; top: 38%; transform: translateY(-50%);
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #fff; border: 0.5px solid #e0e0e0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 2; transition: border-color 0.15s;
+}
+.fme-slider-btn:hover { border-color: #534ab7; }
+.fme-slider-btn svg { width: 14px; height: 14px; fill: #534ab7; }
+.fme-slider-btn-prev { left: -14px; }
+.fme-slider-btn-next { right: -14px; }
+.fme-slider-btn[disabled] { opacity: 0.3; pointer-events: none; }
+.fme-slider-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+.fme-slider-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #d0cef7; cursor: pointer; transition: background 0.15s;
+}
+.fme-slider-dot.active { background: #534ab7; }
+
+/* Links row */
+.fme-about-links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+.fme-about-link-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 1rem 1.25rem; background: #fff;
+    border: 0.5px solid #e0e0e0; border-radius: 12px;
+    text-decoration: none; transition: border-color 0.15s;
+}
+.fme-about-link-card:hover { border-color: #7f77dd; }
+.fme-about-link-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.fme-about-link-icon svg { width: 18px; height: 18px; }
+.fme-about-link-title { font-size: 13px; font-weight: 500; color: #1d2327; margin: 0; }
+.fme-about-link-sub   { font-size: 11px; color: #666; margin: 2px 0 0; }
+.fme-about-link-arrow { margin-left: auto; color: #999; font-size: 16px; }
+
+@media ( max-width: 782px ) {
+    .fme-about-metrics,
+    .fme-about-grid,
+    .fme-about-tutorials,
+    .fme-about-links { grid-template-columns: 1fr; }
+}
