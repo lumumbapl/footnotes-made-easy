@@ -555,7 +555,7 @@ class swas_wp_footnotes {
 
 		global $footnotes_hook;
 
-		$footnotes_hook = add_options_page( __( 'Footnotes Made Easy', 'footnotes-made-easy' ), __( 'Footnotes', 'footnotes-made-easy' ), 'manage_options', 'footnotes-options-page', array( $this, 'footnotes_options_page' ) );
+		$footnotes_hook = add_options_page( __( 'Footnotes Made Easy', 'footnotes-made-easy' ), __( 'Footnotes Made Easy', 'footnotes-made-easy' ), 'manage_options', 'footnotes-options-page', array( $this, 'footnotes_options_page' ) );
 
 		add_action( 'load-' . $footnotes_hook, array( $this, 'remove_help_tabs' ) );
 
