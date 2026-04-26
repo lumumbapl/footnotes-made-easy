@@ -73,9 +73,97 @@ function fme_enqueue_styles( $hook ) {
                 'sub'   => esc_html__( 'Plugin stats, version status, tutorials, and resources.', 'footnotes-made-easy' ),
             ),
         ),
+        'showBanner' => fme_should_show_rating_banner() ? '1' : '0',
+        'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+        'nonce'      => wp_create_nonce( 'fme_banner_nonce' ),
     ) );
 }
 add_action( 'admin_enqueue_scripts', 'fme_enqueue_styles' );
+
+/* ── Rating-banner state helpers ──────────────────────────────────────────── */
+
+/**
+ * Banner meta key used to track state per admin user.
+ * Possible values:
+ *   'install_date:<timestamp>'  — set on activation / version upgrade
+ *   'snoozed:<timestamp>'       — set when the user clicks ✕; timestamp = show-again time
+ *   'dismissed_forever'         — set when the user clicks Rate Plugin
+ */
+define( 'FME_BANNER_META_KEY', 'fme_rating_banner' );
+
+/** Current plugin version string — used to detect upgrades. */
+define( 'FME_BANNER_VERSION', '3.2.0-beta.3' );
+
+/**
+ * Set the install/upgrade date for the current admin user.
+ * Called on plugin activation and on the first page-load after a version upgrade.
+ */
+function fme_set_banner_install_date() {
+    $uid = get_current_user_id();
+    if ( ! $uid ) {
+        return;
+    }
+    update_user_meta( $uid, FME_BANNER_META_KEY, 'install_date:' . time() );
+}
+
+/**
+ * On plugin activation seed the install date for the activating user.
+ */
+function fme_activation_hook() {
+    fme_set_banner_install_date();
+    // Also store the version that triggered this seed so upgrades work.
+    update_user_meta( get_current_user_id(), 'fme_banner_seeded_version', FME_BANNER_VERSION );
+}
+register_activation_hook( __FILE__, 'fme_activation_hook' );
+
+/**
+ * Determine whether the rating banner should be visible to the current user.
+ *
+ * @return bool
+ */
+function fme_should_show_rating_banner() {
+    $uid = get_current_user_id();
+    if ( ! $uid || ! current_user_can( 'manage_options' ) ) {
+        return false;
+    }
+
+    $meta = get_user_meta( $uid, FME_BANNER_META_KEY, true );
+
+    // ── No meta at all: first time running this version; seed now and hide ──
+    if ( ! $meta ) {
+        fme_set_banner_install_date();
+        return false;
+    }
+
+    // ── Version upgrade: re-seed when the stored version differs ────────────
+    $seeded_version = get_user_meta( $uid, 'fme_banner_seeded_version', true );
+    if ( $seeded_version !== FME_BANNER_VERSION && 0 !== strpos( $meta, 'dismissed_forever' ) ) {
+        fme_set_banner_install_date();
+        update_user_meta( $uid, 'fme_banner_seeded_version', FME_BANNER_VERSION );
+        return false;
+    }
+
+    // ── Permanently dismissed ───────────────────────────────────────────────
+    if ( 'dismissed_forever' === $meta ) {
+        return false;
+    }
+
+    $now = time();
+
+    // ── Snoozed: hide until the snooze timestamp passes ─────────────────────
+    if ( 0 === strpos( $meta, 'snoozed:' ) ) {
+        $show_after = (int) substr( $meta, strlen( 'snoozed:' ) );
+        return ( $now >= $show_after );
+    }
+
+    // ── Install date: hide for the first 7 days ─────────────────────────────
+    if ( 0 === strpos( $meta, 'install_date:' ) ) {
+        $install_time = (int) substr( $meta, strlen( 'install_date:' ) );
+        return ( $now >= $install_time + 7 * DAY_IN_SECONDS );
+    }
+
+    return false;
+}
 
 // Instantiate the class
 $swas_wp_footnotes = new swas_wp_footnotes();
@@ -168,6 +256,10 @@ class swas_wp_footnotes {
 
         add_filter( 'admin_footer_text', array( $this, 'remove_footer_text' ) );
         add_filter( 'update_footer', array( $this, 'remove_footer_version' ), 11 );
+
+        // Rating banner AJAX handlers
+        add_action( 'wp_ajax_fme_banner_rated',   array( $this, 'ajax_banner_rated' ) );
+        add_action( 'wp_ajax_fme_banner_snooze',  array( $this, 'ajax_banner_snooze' ) );
 
     }
 
@@ -446,15 +538,6 @@ class swas_wp_footnotes {
 	*/
 
 	function plugin_meta( $links, $file ) {
-
-		if ( false !== strpos( $file, 'footnotes-made-easy.php' ) ) {
-
-			$links = array_merge( $links, array( '<a href="https://github.com/lumumbapl/footnotes-made-easy">' . __( 'Github', 'footnotes-made-easy' ) . '</a>' ) );
-
-			$links = array_merge( $links, array( '<a href="https://wordpress.org/support/plugin/footnotes-made-easy">' . __( 'Support', 'footnotes-made-easy' ) . '</a>' ) );
-
-		}
-
 		return $links;
 	}
 
@@ -717,5 +800,32 @@ class swas_wp_footnotes {
 		}
 		return $footer_version;
 	}
+
+    /* ── Rating-banner AJAX handlers ──────────────────────────────────────── */
+
+    /**
+     * AJAX: user clicked "Rate Plugin" — dismiss the banner forever.
+     */
+    function ajax_banner_rated() {
+        check_ajax_referer( 'fme_banner_nonce', 'nonce' );
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'Unauthorized', 403 );
+        }
+        update_user_meta( get_current_user_id(), FME_BANNER_META_KEY, 'dismissed_forever' );
+        wp_send_json_success();
+    }
+
+    /**
+     * AJAX: user clicked ✕ Dismiss — snooze the banner for 7 days.
+     */
+    function ajax_banner_snooze() {
+        check_ajax_referer( 'fme_banner_nonce', 'nonce' );
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'Unauthorized', 403 );
+        }
+        $show_after = time() + 7 * DAY_IN_SECONDS;
+        update_user_meta( get_current_user_id(), FME_BANNER_META_KEY, 'snoozed:' . $show_after );
+        wp_send_json_success();
+    }
 
 }
