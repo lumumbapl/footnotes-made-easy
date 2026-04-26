@@ -57,8 +57,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
         <div class="fme-content">
 
-            <!-- Rating banner -->
-            <div class="fme-rating-banner" id="fme-rating-banner">
+            <!-- Rating banner — only rendered when the server decides it should show -->
+            <div class="fme-rating-banner<?php echo fme_should_show_rating_banner() ? '' : ' fme-banner-hidden'; ?>" id="fme-rating-banner">
                 <span class="fme-rating-heart">🩷</span>
                 <div class="fme-rating-text">
                     <?php
