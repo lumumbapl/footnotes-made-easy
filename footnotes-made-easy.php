@@ -3,7 +3,7 @@
  * Plugin Name:       Footnotes Made Easy
  * Plugin URI:        https://lumumbas-blog.co.ke/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           3.2.0-beta.4
+ * Version:           3.2.0-beta.5
  * Requires at least: 4.6
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
@@ -37,16 +37,16 @@ function fme_enqueue_styles( $hook ) {
 
     wp_enqueue_style(
         'fme-admin-styles',
-        plugin_dir_url( __FILE__ ) . 'css/admin-settings.css',
+        plugin_dir_url( __FILE__ ) . 'assets/css/admin-settings.css',
         array(),
-        filemtime( plugin_dir_path( __FILE__ ) . 'css/admin-settings.css' )
+        filemtime( plugin_dir_path( __FILE__ ) . 'assets/css/admin-settings.css' )
     );
 
     wp_enqueue_script(
         'fme-admin-settings',
-        plugin_dir_url( __FILE__ ) . 'js/admin-settings.js',
+        plugin_dir_url( __FILE__ ) . 'assets/js/admin-settings.js',
         array(),
-        filemtime( plugin_dir_path( __FILE__ ) . 'js/admin-settings.js' ),
+        filemtime( plugin_dir_path( __FILE__ ) . 'assets/js/admin-settings.js' ),
         true // load in footer
     );
 
@@ -634,7 +634,7 @@ class swas_wp_footnotes {
 		}
 		$this->current_options = $new_setting;
 		unset( $new_setting );
-		include ( dirname(__FILE__) . '/options.php' );
+		include ( dirname(__FILE__) . '/includes/options.php' );
 	}
 
 	/**
@@ -792,7 +792,7 @@ class swas_wp_footnotes {
 
 		wp_enqueue_script(
 							'wp-footnotes-tooltips',
-							plugins_url( 'js/tooltips.min.js' , __FILE__ ),
+							plugins_url( 'assets/js/tooltips.min.js' , __FILE__ ),
 							array(
 									'jquery',
 									'jquery-ui-widget',
@@ -804,7 +804,7 @@ class swas_wp_footnotes {
 							true
 							);
 
-		wp_enqueue_style( 'wp-footnotes-tt-style', plugins_url( 'css/tooltips.min.css' , __FILE__ ), array(), '3.0.8' );
+		wp_enqueue_style( 'wp-footnotes-tt-style', plugins_url( 'assets/css/tooltips.min.css' , __FILE__ ), array(), '3.0.8' );
 	}
 
 	/**
