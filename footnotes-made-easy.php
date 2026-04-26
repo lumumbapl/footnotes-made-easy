@@ -3,7 +3,7 @@
  * Plugin Name:       Footnotes Made Easy
  * Plugin URI:        https://lumumbas-blog.co.ke/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           3.2.0-beta.3
+ * Version:           3.2.0-beta.4
  * Requires at least: 4.6
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
@@ -37,9 +37,9 @@ function fme_enqueue_styles( $hook ) {
 
     wp_enqueue_style(
         'fme-admin-styles',
-        plugin_dir_url( __FILE__ ) . 'css/dbad.css',
+        plugin_dir_url( __FILE__ ) . 'css/admin-settings.css',
         array(),
-        filemtime( plugin_dir_path( __FILE__ ) . 'css/dbad.css' )
+        filemtime( plugin_dir_path( __FILE__ ) . 'css/admin-settings.css' )
     );
 
     wp_enqueue_script(
@@ -220,6 +220,7 @@ class swas_wp_footnotes {
             'footnotes_close' => '))',
             'pretty_tooltips' => false,
             'exclude_urls' => '',
+            'exclude_categories' => '',
             'version' => self::OPTIONS_VERSION
         );
 
@@ -327,6 +328,7 @@ class swas_wp_footnotes {
         $footnotes_options[ 'footnotes_close' ] = sanitize_text_field( $post_array[ 'footnotes_close' ] );
         $footnotes_options[ 'pretty_tooltips' ] = ( array_key_exists( 'pretty_tooltips', $post_array ) ) ? true : false;
         $footnotes_options[ 'exclude_urls' ] = sanitize_textarea_field( $post_array[ 'exclude_urls' ] ?? '' );
+        $footnotes_options[ 'exclude_categories' ] = sanitize_textarea_field( $post_array[ 'exclude_categories' ] ?? '' );
 
         update_option( 'swas_footnote_options', $footnotes_options );
         $this->current_options = $footnotes_options;
@@ -379,6 +381,47 @@ class swas_wp_footnotes {
 
 		return false;
 	}
+
+	/**
+	 * Check if the current post belongs to an excluded category
+	 *
+	 * @since 3.2.0
+	 *
+	 * @return bool True if the post's categories intersect the exclusion list
+	 */
+	function is_excluded_category() {
+
+		$exclude_categories = $this->current_options[ 'exclude_categories' ] ?? '';
+		if ( empty( trim( $exclude_categories ) ) ) {
+			return false;
+		}
+
+		$lines = explode( "\n", $exclude_categories );
+		$slugs = array();
+		$ids   = array();
+
+		foreach ( $lines as $line ) {
+			$line = trim( $line );
+			if ( empty( $line ) ) {
+				continue;
+			}
+			if ( ctype_digit( $line ) ) {
+				$ids[] = (int) $line;
+			} else {
+				$slugs[] = $line;
+			}
+		}
+
+		if ( ! empty( $ids ) && has_category( $ids ) ) {
+			return true;
+		}
+
+		if ( ! empty( $slugs ) && has_category( $slugs ) ) {
+			return true;
+		}
+
+		return false;
+	}
 	
 	/**
 	* Searches the text and extracts footnotes
@@ -421,6 +464,7 @@ class swas_wp_footnotes {
 		if ( $this->current_options[ 'no_display_feed' ] && is_feed() ) $display = false;
 		if ( $this->current_options[ 'no_display_preview' ] && is_preview() ) $display = false;
 		if ( $this->is_excluded_url() ) $display = false;
+		if ( $this->is_excluded_category() ) $display = false;
 
 		$footnotes = array();
 
