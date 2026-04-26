@@ -101,6 +101,25 @@
     white-space: nowrap;
 }
 
+.fme-brand-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.fme-brand-text .fme-brand-name {
+    align-self: stretch;
+}
+
+.fme-brand-text .fme-badge-new {
+    margin-left: 0;
+    align-self: flex-end;
+    font-size: 10px;
+    padding: 2px 7px;
+    letter-spacing: 0.04em;
+}
+
 .fme-tab-btn {
     background: transparent;
     border: none;
@@ -291,6 +310,60 @@
     margin: 0 0 1rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--fme-border);
+}
+
+.fme-card-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--fme-border);
+}
+
+.fme-card-title-row .fme-card-title {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.fme-more-tutorials-btn {
+    background: var(--fme-accent) !important;
+    color: #fff !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    border-radius: var(--fme-radius-md) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none !important;
+    display: inline-block;
+    transition: background 0.15s;
+    flex-shrink: 0;
+    box-shadow: none !important;
+    line-height: 1.5 !important;
+}
+
+.fme-more-tutorials-btn:hover,
+.fme-more-tutorials-btn:focus {
+    background: var(--fme-accent-hover) !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+
+.fme-badge-new {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: #dbeafe;
+    color: #1e40af;
+    vertical-align: middle;
+    margin-left: 6px;
+    letter-spacing: 0.01em;
 }
 
 /* ── Field rows ───────────────────────────────────────────── */
@@ -565,8 +638,9 @@
         border-right: 1px solid var(--fme-border);
     }
 
-    /* Hide the text label; keep the icon so the brand still reads */
-    .fme-brand-name {
+    /* Hide the text label and FREE badge; keep the icon so the brand still reads */
+    .fme-brand-name,
+    .fme-brand-text {
         display: none;
     }
 
@@ -974,10 +1048,16 @@
 
     /*
      * On narrow screens the 3-up layout collapses to single-column.
-     * Cards go full-width so each one fills the available space.
-     * The slider JS still works — it just steps through full-width cards.
+     * Switch the flex container to a vertical column so all three
+     * cards are visible stacked on top of each other.
      */
+    .fme-about-tutorials {
+        flex-direction: column;
+        overflow: visible;
+    }
+
     .fme-about-tutorial {
-        flex: 0 0 100%;
+        flex: 0 0 auto;
+        width: 100%;
     }
 }
