@@ -480,7 +480,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                 $fme_total_pages = wp_count_posts( 'page' )->publish;
 
                 // ── Version checks ─────────────────────────────────────────
-                $fme_plugin_version = '3.2.0';
+                $fme_plugin_data    = get_file_data(
+                    plugin_dir_path( __FILE__ ) . 'footnotes-made-easy.php',
+                    array( 'Version' => 'Version' )
+                );
+                $fme_plugin_version = $fme_plugin_data['Version'] ?? '—';
                 $fme_wp_version     = get_bloginfo( 'version' );
 
                 $fme_plugin_latest  = get_site_transient( 'update_plugins' );
@@ -530,7 +534,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 <span class="fme-about-stat-icon fme-about-icon-purple">
                                     <svg viewBox="0 0 20 20"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.396 0 2.7.37 3.84 1.02A7.968 7.968 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>
                                 </span>
-                                <span class="fme-about-stat-label"><?php esc_html_e( 'Pages built with footnotes', 'footnotes-made-easy' ); ?></span>
+                                <span class="fme-about-stat-label"><?php esc_html_e( 'Pages with footnotes', 'footnotes-made-easy' ); ?></span>
                             </div>
                             <div class="fme-about-stat-right">
                                 <span class="fme-about-stat-value"><?php echo esc_html( $pages_with_footnotes ); ?></span>
@@ -543,7 +547,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 <span class="fme-about-stat-icon fme-about-icon-teal">
                                     <svg viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 13a1 1 0 00-.117 1.993L5 15h10a1 1 0 00.117-1.993L15 13H5z"/></svg>
                                 </span>
-                                <span class="fme-about-stat-label"><?php esc_html_e( 'Posts built with footnotes', 'footnotes-made-easy' ); ?></span>
+                                <span class="fme-about-stat-label"><?php esc_html_e( 'Posts with footnotes', 'footnotes-made-easy' ); ?></span>
                             </div>
                             <div class="fme-about-stat-right">
                                 <span class="fme-about-stat-value"><?php echo esc_html( $posts_with_footnotes ); ?></span>
@@ -573,6 +577,10 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     <?php echo esc_html( sprintf( __( 'You are running version %s', 'footnotes-made-easy' ), $fme_plugin_version ) ); ?>
                                 </p>
                             </div>
+                            <?php if ( ! $fme_plugin_uptodate ) : ?>
+                            <a href="<?php echo esc_url( admin_url( 'plugins.php?plugin_status=upgrade' ) ); ?>"
+                               class="fme-update-btn"><?php esc_html_e( 'Update now', 'footnotes-made-easy' ); ?></a>
+                            <?php endif; ?>
                             <span class="fme-about-badge <?php echo $fme_plugin_uptodate ? 'fme-about-badge-green' : 'fme-about-badge-amber'; ?>">
                                 <?php echo esc_html( $fme_plugin_version ); ?>
                             </span>
@@ -596,6 +604,10 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     <?php echo esc_html( sprintf( __( 'You are running version %s', 'footnotes-made-easy' ), $fme_wp_version ) ); ?>
                                 </p>
                             </div>
+                            <?php if ( ! $fme_wp_uptodate ) : ?>
+                            <a href="<?php echo esc_url( admin_url( 'update-core.php' ) ); ?>"
+                               class="fme-update-btn"><?php esc_html_e( 'Update now', 'footnotes-made-easy' ); ?></a>
+                            <?php endif; ?>
                             <span class="fme-about-badge <?php echo $fme_wp_uptodate ? 'fme-about-badge-green' : 'fme-about-badge-amber'; ?>">
                                 <?php echo esc_html( $fme_wp_version ); ?>
                             </span>
@@ -606,50 +618,72 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                 <!-- Video tutorials -->
                 <div class="fme-card fme-about-section">
-                    <h3 class="fme-card-title"><?php esc_html_e( 'Video tutorials', 'footnotes-made-easy' ); ?></h3>
-                    <div class="fme-about-tutorials">
-
-                        <?php
-                        $fme_tutorials = array(
-                            array(
-                                'video_id' => 'dQw4w9WgXcQ',
-                                'title'    => __( 'Getting started with Footnotes Made Easy', 'footnotes-made-easy' ),
-                                'duration' => '5:24',
-                                'level'    => __( 'Beginner', 'footnotes-made-easy' ),
-                                'color'    => '#d4c8fc',
-                            ),
-                            array(
-                                'video_id' => 'dQw4w9WgXcQ',
-                                'title'    => __( 'Customising footnote styles & identifiers', 'footnotes-made-easy' ),
-                                'duration' => '8:11',
-                                'level'    => __( 'Intermediate', 'footnotes-made-easy' ),
-                                'color'    => '#b8ead8',
-                            ),
-                            array(
-                                'video_id' => 'dQw4w9WgXcQ',
-                                'title'    => __( 'Using pretty tooltips & advanced options', 'footnotes-made-easy' ),
-                                'duration' => '6:47',
-                                'level'    => __( 'Intermediate', 'footnotes-made-easy' ),
-                                'color'    => '#f5c9b4',
-                            ),
-                        );
-                        foreach ( $fme_tutorials as $fme_tut ) : ?>
-                        <div class="fme-about-tutorial"
-                             data-video="<?php echo esc_attr( $fme_tut['video_id'] ); ?>"
-                             data-title="<?php echo esc_attr( $fme_tut['title'] ); ?>">
-                            <div class="fme-about-thumb" style="background:<?php echo esc_attr( $fme_tut['color'] ); ?>;">
-                                <span class="fme-about-play">
-                                    <svg viewBox="0 0 20 20"><path d="M6.3 2.84A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.27l9.344-5.891a1.5 1.5 0 000-2.538L6.3 2.841z"/></svg>
-                                </span>
-                            </div>
-                            <div class="fme-about-tut-info">
-                                <p class="fme-about-tut-title"><?php echo esc_html( $fme_tut['title'] ); ?></p>
-                                <p class="fme-about-tut-meta"><?php echo esc_html( $fme_tut['duration'] . ' · ' . $fme_tut['level'] ); ?></p>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-
+                    <div class="fme-card-title-row">
+                        <h3 class="fme-card-title"><?php esc_html_e( 'Video tutorials', 'footnotes-made-easy' ); ?></h3>
+                        <a href="#" class="fme-more-tutorials-btn"><?php esc_html_e( 'More tutorials', 'footnotes-made-easy' ); ?></a>
                     </div>
+
+                    <?php
+                    /*
+                     * Tutorial list.
+                     * Each entry needs only: video_id, title, duration, level.
+                     * The thumbnail is fetched directly from YouTube's image CDN —
+                     * no API key required. Format used: mqdefault (320×180, 16:9,
+                     * always available). Switch to hqdefault (480×360) for crisper
+                     * images if you prefer; it occasionally has black bars on older
+                     * uploads, so mqdefault is the safer default.
+                     *
+                     * To add more videos just append items to this array.
+                     * Three videos display in a responsive grid (3-col → 2-col → 1-col).
+                     */
+                    $fme_tutorials = array(
+                        array(
+                            'video_id' => 'LuXMb8Hz4tc',
+                            'title'    => __( 'Getting started with Footnotes Made Easy', 'footnotes-made-easy' ),
+                            'duration' => '5:24',
+                            'level'    => __( 'Beginner', 'footnotes-made-easy' ),
+                        ),
+                        array(
+                            'video_id' => 'dQw4w9WgXcQ',
+                            'title'    => __( 'Customising footnote styles & identifiers', 'footnotes-made-easy' ),
+                            'duration' => '8:11',
+                            'level'    => __( 'Intermediate', 'footnotes-made-easy' ),
+                        ),
+                        array(
+                            'video_id' => 'dQw4w9WgXcQ',
+                            'title'    => __( 'Using pretty tooltips & advanced options', 'footnotes-made-easy' ),
+                            'duration' => '6:47',
+                            'level'    => __( 'Intermediate', 'footnotes-made-easy' ),
+                        ),
+                    );
+                    ?>
+
+                    <div class="fme-about-tutorials" id="fme-tutorials-track">
+                            <?php foreach ( $fme_tutorials as $fme_tut ) : ?>
+                            <div class="fme-about-tutorial"
+                                 data-video="<?php echo esc_attr( $fme_tut['video_id'] ); ?>"
+                                 data-title="<?php echo esc_attr( $fme_tut['title'] ); ?>"
+                                 role="button"
+                                 tabindex="0"
+                                 aria-label="<?php echo esc_attr( sprintf( __( 'Play: %s', 'footnotes-made-easy' ), $fme_tut['title'] ) ); ?>">
+                                <div class="fme-about-thumb">
+                                    <img src="<?php echo esc_url( 'https://img.youtube.com/vi/' . $fme_tut['video_id'] . '/mqdefault.jpg' ); ?>"
+                                         alt="<?php echo esc_attr( $fme_tut['title'] ); ?>"
+                                         loading="lazy"
+                                         width="320"
+                                         height="180" />
+                                    <span class="fme-about-play" aria-hidden="true">
+                                        <svg viewBox="0 0 20 20"><path d="M6.3 2.84A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.27l9.344-5.891a1.5 1.5 0 000-2.538L6.3 2.841z"/></svg>
+                                    </span>
+                                </div>
+                                <div class="fme-about-tut-info">
+                                    <p class="fme-about-tut-title"><?php echo esc_html( $fme_tut['title'] ); ?></p>
+                                    <p class="fme-about-tut-meta"><?php echo esc_html( $fme_tut['duration'] . ' · ' . $fme_tut['level'] ); ?></p>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                    </div><!-- /.fme-tutorials -->
+
                 </div><!-- /.fme-card tutorials -->
 
                 <!-- Documentation / Support / GitHub -->
@@ -702,6 +736,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <p id="fme-video-title" style="padding:12px 16px;font-size:13px;font-weight:500;color:#fff;margin:0;"></p>
                 </div>
             </div>
+
             <div class="fme-form-footer">
                 <button type="submit" name="save_options" value="1" class="fme-save-btn">
                     <svg viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
@@ -714,101 +749,3 @@ if ( ! defined( 'ABSPATH' ) ) {
     </form><!-- /#fme-settings-form -->
 
 </div><!-- /#fme-settings-wrap -->
-
-<script>
-(function () {
-
-    /* ── Tab switching ──────────────────────────────── */
-    var tabs = {
-        display:   { title: '<?php echo esc_js( __( 'Display settings', 'footnotes-made-easy' ) ); ?>',   sub: '<?php echo esc_js( __( 'Control how footnote identifiers, links, and back-links appear on the front end.', 'footnotes-made-easy' ) ); ?>' },
-        behaviour: { title: '<?php echo esc_js( __( 'Behaviour settings', 'footnotes-made-easy' ) ); ?>', sub: '<?php echo esc_js( __( 'Configure how footnotes are processed and rendered by WordPress.', 'footnotes-made-easy' ) ); ?>' },
-        suppress:  { title: '<?php echo esc_js( __( 'Suppress settings', 'footnotes-made-easy' ) ); ?>',  sub: '<?php echo esc_js( __( 'Choose where on your site footnotes should not appear.', 'footnotes-made-easy' ) ); ?>' },
-        advanced:  { title: '<?php echo esc_js( __( 'Advanced settings', 'footnotes-made-easy' ) ); ?>',  sub: '<?php echo esc_js( __( 'Modify footnote delimiter tags — changes require updating all existing posts.', 'footnotes-made-easy' ) ); ?>' },
-        about:     { title: '<?php echo esc_js( __( 'About', 'footnotes-made-easy' ) ); ?>',              sub: '<?php echo esc_js( __( 'Plugin stats, version status, tutorials, and resources.', 'footnotes-made-easy' ) ); ?>' }
-    };
-
-    var btnEls   = document.querySelectorAll('.fme-tab-btn');
-    var titleEl  = document.getElementById('fme-tab-title');
-    var subEl    = document.getElementById('fme-tab-sub');
-    var tabInput = document.getElementById('fme-active-tab-input');
-
-    function activateTab( id ) {
-        if ( ! tabs[id] ) { id = 'display'; }
-        btnEls.forEach(function (b) { b.classList.remove('fme-active'); });
-        var activeBtn = document.querySelector('.fme-tab-btn[data-tab="' + id + '"]');
-        if ( activeBtn ) { activeBtn.classList.add('fme-active'); }
-        document.querySelectorAll('.fme-tab-panel').forEach(function (p) { p.classList.remove('fme-active'); });
-        var activePanel = document.getElementById('fme-panel-' + id);
-        if ( activePanel ) { activePanel.classList.add('fme-active'); }
-        titleEl.textContent = tabs[id].title;
-        subEl.textContent   = tabs[id].sub;
-        if ( tabInput ) { tabInput.value = id; }
-        // Hide the save footer on the About tab — it has nothing to save
-        var footer = document.querySelector('.fme-form-footer');
-        if ( footer ) { footer.style.display = ( id === 'about' ) ? 'none' : ''; }
-    }
-
-    btnEls.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            activateTab( btn.getAttribute('data-tab') );
-        });
-    });
-
-    /* ── Restore the active tab after a save ────────── */
-    activateTab( tabInput ? tabInput.value : 'display' );
-
-    /* ── Auto-dismiss saved notice after 4 s ───────── */
-    var notice = document.getElementById('fme-notice-saved');
-    if (notice) {
-        setTimeout(function () {
-            notice.classList.add('fme-notice-hiding');
-            // Remove from flow after transition ends
-            notice.addEventListener('transitionend', function () {
-                notice.style.display = 'none';
-            }, { once: true });
-        }, 4000);
-    }
-
-    /* ── Dismiss rating banner ──────────────────────── */
-    var dismissBtn = document.getElementById('fme-dismiss-banner');
-    if (dismissBtn) {
-        dismissBtn.addEventListener('click', function () {
-            var banner = document.getElementById('fme-rating-banner');
-            if (banner) { banner.classList.add('fme-dismissed'); }
-        });
-    }
-
-    /* ── Video modal ────────────────────────────────── */
-    var videoModal  = document.getElementById('fme-video-modal');
-    var videoIframe = document.getElementById('fme-video-iframe');
-    var videoTitleEl = document.getElementById('fme-video-title');
-    var videoClose  = document.getElementById('fme-video-close');
-
-    document.querySelectorAll('.fme-about-tutorial').forEach(function (card) {
-        card.addEventListener('click', function () {
-            var vid   = card.getAttribute('data-video');
-            var title = card.getAttribute('data-title');
-            videoIframe.src      = 'https://www.youtube.com/embed/' + vid + '?autoplay=1';
-            videoTitleEl.textContent = title;
-            videoModal.style.display = 'flex';
-        });
-    });
-
-    if ( videoClose ) {
-        videoClose.addEventListener('click', function () {
-            videoIframe.src = '';
-            videoModal.style.display = 'none';
-        });
-    }
-
-    if ( videoModal ) {
-        videoModal.addEventListener('click', function (e) {
-            if ( e.target === videoModal ) {
-                videoIframe.src = '';
-                videoModal.style.display = 'none';
-            }
-        });
-    }
-
-}());
-</script>
