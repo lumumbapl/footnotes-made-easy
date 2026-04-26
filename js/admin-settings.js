@@ -82,12 +82,42 @@
         }, 4000);
     }
 
-    /* ── Dismiss rating banner ──────────────────────── */
+    /* ── Rating banner ──────────────────────────────── */
+    var banner     = document.getElementById('fme-rating-banner');
     var dismissBtn = document.getElementById('fme-dismiss-banner');
-    if (dismissBtn) {
+    var rateBtn    = document.querySelector('.fme-rate-btn');
+
+    // Show the banner only when the server says to (avoids a flash of the
+    // hidden CSS class being removed before JS runs on subsequent loads).
+    if ( banner && fmeSettings.showBanner === '1' ) {
+        banner.classList.remove('fme-banner-hidden');
+    }
+
+    /**
+     * Fire-and-forget AJAX call to persist banner state, then animate out.
+     *
+     * @param {string} action  'fme_banner_rated' | 'fme_banner_snooze'
+     */
+    function fmeBannerAction( action ) {
+        if ( banner ) { banner.classList.add('fme-dismissed'); }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open( 'POST', fmeSettings.ajaxUrl, true );
+        xhr.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
+        xhr.send( 'action=' + action + '&nonce=' + encodeURIComponent( fmeSettings.nonce ) );
+    }
+
+    // ✕ Dismiss → snooze for 7 days
+    if ( dismissBtn ) {
         dismissBtn.addEventListener('click', function () {
-            var banner = document.getElementById('fme-rating-banner');
-            if (banner) { banner.classList.add('fme-dismissed'); }
+            fmeBannerAction('fme_banner_snooze');
+        });
+    }
+
+    // Rate Plugin → dismiss forever (fires before the link navigates away)
+    if ( rateBtn ) {
+        rateBtn.addEventListener('click', function () {
+            fmeBannerAction('fme_banner_rated');
         });
     }
 
