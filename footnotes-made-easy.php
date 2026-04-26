@@ -28,13 +28,52 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Enqueue plugin admin styles — only on our settings page
+ * Enqueue plugin admin styles and scripts — only on our settings page
  */
 function fme_enqueue_styles( $hook ) {
     if ( 'settings_page_footnotes-options-page' !== $hook ) {
         return;
     }
-    wp_enqueue_style( 'dbad-styles', plugin_dir_url( __FILE__ ) . 'css/dbad.css', array(), filemtime( plugin_dir_path( __FILE__ ) . 'css/dbad.css' ) );
+
+    wp_enqueue_style(
+        'fme-admin-styles',
+        plugin_dir_url( __FILE__ ) . 'css/dbad.css',
+        array(),
+        filemtime( plugin_dir_path( __FILE__ ) . 'css/dbad.css' )
+    );
+
+    wp_enqueue_script(
+        'fme-admin-settings',
+        plugin_dir_url( __FILE__ ) . 'js/admin-settings.js',
+        array(),
+        filemtime( plugin_dir_path( __FILE__ ) . 'js/admin-settings.js' ),
+        true // load in footer
+    );
+
+    wp_localize_script( 'fme-admin-settings', 'fmeSettings', array(
+        'tabs' => array(
+            'display'   => array(
+                'title' => esc_html__( 'Display settings', 'footnotes-made-easy' ),
+                'sub'   => esc_html__( 'Control how footnote identifiers, links, and back-links appear on the front end.', 'footnotes-made-easy' ),
+            ),
+            'behaviour' => array(
+                'title' => esc_html__( 'Behaviour settings', 'footnotes-made-easy' ),
+                'sub'   => esc_html__( 'Configure how footnotes are processed and rendered by WordPress.', 'footnotes-made-easy' ),
+            ),
+            'suppress'  => array(
+                'title' => esc_html__( 'Suppress settings', 'footnotes-made-easy' ),
+                'sub'   => esc_html__( 'Choose where on your site footnotes should not appear.', 'footnotes-made-easy' ),
+            ),
+            'advanced'  => array(
+                'title' => esc_html__( 'Advanced settings', 'footnotes-made-easy' ),
+                'sub'   => esc_html__( 'Modify footnote delimiter tags — changes require updating all existing posts.', 'footnotes-made-easy' ),
+            ),
+            'about'     => array(
+                'title' => esc_html__( 'About', 'footnotes-made-easy' ),
+                'sub'   => esc_html__( 'Plugin stats, version status, tutorials, and resources.', 'footnotes-made-easy' ),
+            ),
+        ),
+    ) );
 }
 add_action( 'admin_enqueue_scripts', 'fme_enqueue_styles' );
 
@@ -129,6 +168,7 @@ class swas_wp_footnotes {
 
         add_filter( 'admin_footer_text', array( $this, 'remove_footer_text' ) );
         add_filter( 'update_footer', array( $this, 'remove_footer_version' ), 11 );
+
     }
 
     /**
@@ -677,4 +717,5 @@ class swas_wp_footnotes {
 		}
 		return $footer_version;
 	}
+
 }
