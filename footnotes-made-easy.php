@@ -3,7 +3,7 @@
  * Plugin Name:       Footnotes Made Easy
  * Plugin URI:        https://lumumbas-blog.co.ke/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           3.2.0-beta.1
+ * Version:           3.2.0-beta.3
  * Requires at least: 4.6
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
@@ -268,12 +268,6 @@ class swas_wp_footnotes {
 			return $data;
 		}
 
-		// Ensure post exists
-
-		if ( !$post ) {
-			return $data;
-		}		
-
 		// Check for and setup the starting number
 
 		$start_number = ( 1 === preg_match( "|<!\-\-startnum=(\d+)\-\->|", $data,$start_number_array ) ) ? $start_number_array[ 1 ] : 1;
@@ -491,57 +485,6 @@ class swas_wp_footnotes {
 		}
 	}
 
-
-	function footnotes_help() {
-
-		global $footnotes_hook;
-		$screen = get_current_screen();
-
-		if ( $screen->id !== $footnotes_hook ) { return; }
-
-		$screen -> add_help_tab( array( 'id' => 'footnotes-help-tab', 'title'	=> __( 'Help', 'footnotes-made-easy' ), 'content' => $this->add_help_content() ) );
-
-		$screen -> set_help_sidebar( $this->add_sidebar_content() );
-
-	}
-
-	/**
-	* Options Help
-	*
-	* Return help text for options screen
-	*
-	* @since	1.0
-	*
-	* @return	string	Help Text
-	*/
-
-	function add_help_content() {
-
-		$help_text = '<p>' . __( 'This screen allows you to specify the default options for the Footnotes Made Easy plugin.', 'footnotes-made-easy' ) . '</p>';
-		$help_text .= '<p>' . __( "The identifier is what appears when a footnote is inserted into your page contents. The back-link appear after each footnote, linking back to the identifier.", 'footnotes-made-easy' ) . '</p>';
-		$help_text .= '<p>' . __( 'Remember to click the Save Changes button at the bottom of the screen for new settings to take effect.', 'footnotes-made-easy' ) . '</p></h4>';
-
-		return $help_text;
-	}
-
-	/**
-	* Options Help Sidebar
-	*
-	* Add a links sidebar to the options help
-	*
-	* @since	1.0
-	*
-	* @return	string	Help Text
-	*/
-
-	function add_sidebar_content() {
-
-		$help_text = '<p><strong>' . __( 'For more information:', 'footnotes-made-easy' ) . '</strong></p>';
-		$help_text .= '<p><a href="https://wordpress.org/plugins/footnotes-made-easy/">' . __( 'Instructions', 'footnotes-made-easy' ) . '</a></p>';
-		$help_text .= '<p><a href="https://wordpress.org/support/plugin/footnotes-made-easy">' . __( 'Support Forum', 'footnotes-made-easy' ) . '</a></p></h4>';
-
-		return $help_text;
-	}
 
 	/**
 	* Add to Admin
