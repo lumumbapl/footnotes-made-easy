@@ -499,7 +499,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                 // ── Version checks ─────────────────────────────────────────
                 $fme_plugin_data    = get_file_data(
-                    plugin_dir_path( __FILE__ ) . 'footnotes-made-easy.php',
+                    trailingslashit( dirname( dirname( __FILE__ ) ) ) . 'footnotes-made-easy.php',
                     array( 'Version' => 'Version' )
                 );
                 $fme_plugin_version = $fme_plugin_data['Version'] ?? '—';
