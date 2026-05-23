@@ -1,167 +1,187 @@
 /**
- * Footnotes Made Easy — Admin Settings UI
+ * Footnotes Made Easy — Admin JS
  *
- * Handles tab switching, saved-notice dismissal, rating banner,
- * and the video tutorial modal on the plugin settings page.
- *
- * Strings are passed from PHP via wp_localize_script() as fmeSettings.
+ * Handles tab switching (settings page), video modal (dashboard),
+ * and notice auto-dismiss. All data is passed via wp_localize_script
+ * as fmeSettings — no inline scripts needed.
  *
  * @package footnotes-made-easy
  * @since   3.2.0
  */
-
 (function () {
+    'use strict';
 
-    /* ── Tab switching ──────────────────────────────── */
-    var tabs = {
-        display:   { title: fmeSettings.tabs.display.title,   sub: fmeSettings.tabs.display.sub   },
-        behaviour: { title: fmeSettings.tabs.behaviour.title, sub: fmeSettings.tabs.behaviour.sub },
-        suppress:  { title: fmeSettings.tabs.suppress.title,  sub: fmeSettings.tabs.suppress.sub  },
-        advanced:  { title: fmeSettings.tabs.advanced.title,  sub: fmeSettings.tabs.advanced.sub  },
-        about:     { title: fmeSettings.tabs.about.title,     sub: fmeSettings.tabs.about.sub     }
-    };
+    if ( typeof fmeSettings === 'undefined' ) { return; }
 
-    var btnEls   = document.querySelectorAll('.fme-tab-btn');
-    var titleEl  = document.getElementById('fme-tab-title');
-    var subEl    = document.getElementById('fme-tab-sub');
-    var tabInput = document.getElementById('fme-active-tab-input');
+    /* ── Tab switching (Settings page) ─────────────────────── */
+    var tabNav = document.getElementById('fme-tabs-nav');
+    if ( tabNav ) {
+        var tabs   = tabNav.querySelectorAll('.fme-inner-tab');
+        var panels = document.querySelectorAll('.fme-tab-panel');
 
-    function activateTab( id ) {
-        if ( ! tabs[id] ) { id = 'display'; }
-        btnEls.forEach(function (b) { b.classList.remove('fme-active'); });
-        var activeBtn = document.querySelector('.fme-tab-btn[data-tab="' + id + '"]');
-        if ( activeBtn ) { activeBtn.classList.add('fme-active'); }
-        document.querySelectorAll('.fme-tab-panel').forEach(function (p) { p.classList.remove('fme-active'); });
-        var activePanel = document.getElementById('fme-panel-' + id);
-        if ( activePanel ) { activePanel.classList.add('fme-active'); }
-        titleEl.textContent = tabs[id].title;
-        subEl.textContent   = tabs[id].sub;
-        if ( tabInput ) { tabInput.value = id; }
-        // Persist the active tab in the URL hash so plain reloads restore it
-        if ( history.replaceState ) {
-            history.replaceState( null, '', '#' + id );
-        }
-        // Hide the save footer on the About tab — it has nothing to save
-        var footer = document.querySelector('.fme-form-footer');
-        if ( footer ) { footer.style.display = ( id === 'about' ) ? 'none' : ''; }
-    }
+        var submitBtn = document.querySelector('.fme-settings-main .button-primary, .fme-settings-main .fme-save-btn');
 
-    btnEls.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            activateTab( btn.getAttribute('data-tab') );
-        });
-    });
+        function switchTab( id ) {
+            var validTabs = ['display', 'behaviour', 'suppress', 'advanced', 'citations'];
+            if ( validTabs.indexOf( id ) === -1 ) { id = 'display'; }
 
-    /* ── Restore the active tab (save OR plain reload) ─ */
-    /*
-     * Priority order:
-     * 1. URL hash  — set on every tab click; survives plain reloads.
-     * 2. POST value — set on form save; takes over when the page is
-     *    submitted (hash is preserved across the redirect too, but
-     *    the POST value is the canonical source after a save).
-     * 3. Default  — 'display'.
-     */
-    (function () {
-        var hash    = window.location.hash.replace('#', '');
-        var posted  = tabInput ? tabInput.value : '';
-        var initial = ( posted && posted !== 'display' ) ? posted
-                    : ( hash   && tabs[hash]            ) ? hash
-                    : ( posted                          ) ? posted
-                    : 'display';
-        activateTab( initial );
-    }());
+            panels.forEach( function (p) { p.style.display = 'none'; } );
+            tabs.forEach(   function (t) { t.classList.remove('fme-active'); } );
 
-    /* ── Auto-dismiss saved notice after 4 s ───────── */
-    var notice = document.getElementById('fme-notice-saved');
-    if (notice) {
-        setTimeout(function () {
-            notice.classList.add('fme-notice-hiding');
-            notice.addEventListener('transitionend', function () {
-                notice.style.display = 'none';
-            }, { once: true });
-        }, 4000);
-    }
+            var panel = document.getElementById( 'fme-panel-' + id );
+            var tab   = tabNav.querySelector( '.fme-inner-tab[data-tab="' + id + '"]' );
+            if ( panel ) { panel.style.display = ''; }
+            if ( tab )   { tab.classList.add('fme-active'); }
 
-    /* ── Rating banner ──────────────────────────────── */
-    var banner     = document.getElementById('fme-rating-banner');
-    var dismissBtn = document.getElementById('fme-dismiss-banner');
-    var rateBtn    = document.querySelector('.fme-rate-btn');
+            var inp = document.getElementById('fme-active-tab-input');
+            if ( inp ) { inp.value = id; }
 
-    // Show the banner only when the server says to (avoids a flash of the
-    // hidden CSS class being removed before JS runs on subsequent loads).
-    if ( banner && fmeSettings.showBanner === '1' ) {
-        banner.classList.remove('fme-banner-hidden');
-    }
-
-    /**
-     * Fire-and-forget AJAX call to persist banner state, then animate out.
-     *
-     * @param {string} action  'fme_banner_rated' | 'fme_banner_snooze'
-     */
-    function fmeBannerAction( action ) {
-        if ( banner ) { banner.classList.add('fme-dismissed'); }
-
-        var xhr = new XMLHttpRequest();
-        xhr.open( 'POST', fmeSettings.ajaxUrl, true );
-        xhr.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
-        xhr.send( 'action=' + action + '&nonce=' + encodeURIComponent( fmeSettings.nonce ) );
-    }
-
-    // ✕ Dismiss → snooze for 7 days
-    if ( dismissBtn ) {
-        dismissBtn.addEventListener('click', function () {
-            fmeBannerAction('fme_banner_snooze');
-        });
-    }
-
-    // Rate Plugin → dismiss forever (fires before the link navigates away)
-    if ( rateBtn ) {
-        rateBtn.addEventListener('click', function () {
-            fmeBannerAction('fme_banner_rated');
-        });
-    }
-
-    /* ── Video modal ────────────────────────────────── */
-    var videoModal   = document.getElementById('fme-video-modal');
-    var videoIframe  = document.getElementById('fme-video-iframe');
-    var videoTitleEl = document.getElementById('fme-video-title');
-    var videoClose   = document.getElementById('fme-video-close');
-
-    function openVideo( vid, title ) {
-        videoIframe.src          = 'https://www.youtube.com/embed/' + vid + '?autoplay=1';
-        videoTitleEl.textContent = title;
-        videoModal.style.display = 'flex';
-    }
-
-    function closeVideo() {
-        videoIframe.src          = '';
-        videoModal.style.display = 'none';
-    }
-
-    document.querySelectorAll('.fme-about-tutorial').forEach(function (card) {
-        card.addEventListener('click', function () {
-            openVideo( card.getAttribute('data-video'), card.getAttribute('data-title') );
-        });
-        // Keyboard accessibility — Enter / Space open the modal
-        card.addEventListener('keydown', function (e) {
-            if ( e.key === 'Enter' || e.key === ' ' ) {
-                e.preventDefault();
-                openVideo( card.getAttribute('data-video'), card.getAttribute('data-title') );
+            // Disable Save button when on a locked Citations tab
+            if ( submitBtn ) {
+                var isLockedCitations = id === 'citations' && !! document.querySelector('#fme-panel-citations .fme-locked-wrap');
+                submitBtn.disabled = isLockedCitations;
+                submitBtn.style.opacity    = isLockedCitations ? '0.4' : '';
+                submitBtn.style.cursor     = isLockedCitations ? 'not-allowed' : '';
+                submitBtn.style.pointerEvents = isLockedCitations ? 'none' : '';
             }
-        });
-    });
 
-    if ( videoClose ) {
-        videoClose.addEventListener('click', closeVideo);
+            if ( history.replaceState ) {
+                history.replaceState( null, '', '#' + id );
+            }
+        }
+
+        tabs.forEach( function (tab) {
+            tab.addEventListener( 'click', function (e) {
+                // Don't intercept external Pro landing page links
+                if ( tab.classList.contains('fme-inner-tab--link') ) {
+                    return;
+                }
+                e.preventDefault();
+                switchTab( tab.getAttribute('data-tab') );
+            } );
+        } );
+
+        // Restore active tab: posted value > URL hash > default
+        var validTabs = ['display', 'behaviour', 'suppress', 'advanced', 'citations'];
+        var posted  = ( fmeSettings.postedTab && validTabs.indexOf( fmeSettings.postedTab ) !== -1 ) ? fmeSettings.postedTab : '';
+        var hash    = window.location.hash.replace( '#', '' );
+        var initial = posted  ? posted
+                    : ( hash && validTabs.indexOf( hash ) !== -1 ) ? hash
+                    : 'display';
+        switchTab( initial );
     }
 
-    if ( videoModal ) {
-        videoModal.addEventListener('click', function (e) {
-            if ( e.target === videoModal ) { closeVideo(); }
-        });
-        document.addEventListener('keydown', function (e) {
-            if ( e.key === 'Escape' && videoModal.style.display === 'flex' ) { closeVideo(); }
-        });
+    /* ── Video modal (Dashboard page) ──────────────────────── */
+    var watchBtn = document.getElementById('fme-watch-video-btn');
+    if ( watchBtn ) {
+        var modal  = document.getElementById('fme-video-modal');
+        var iframe = document.getElementById('fme-video-iframe');
+        var closeBtn = document.getElementById('fme-video-close');
+        var videoId = 'LuXMb8Hz4tc';
+
+        function openModal() {
+            if ( ! modal || ! iframe ) { return; }
+            iframe.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0';
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            if ( ! modal || ! iframe ) { return; }
+            modal.style.display = 'none';
+            iframe.src = '';
+            document.body.style.overflow = '';
+        }
+
+        watchBtn.addEventListener( 'click', openModal );
+        if ( closeBtn ) { closeBtn.addEventListener( 'click', closeModal ); }
+        if ( modal ) {
+            modal.addEventListener( 'click', function (e) {
+                if ( e.target === modal ) { closeModal(); }
+            } );
+        }
+        document.addEventListener( 'keydown', function (e) {
+            if ( e.key === 'Escape' && modal && modal.style.display === 'flex' ) { closeModal(); }
+        } );
+    }
+
+    /* ── Auto-dismiss saved notice ──────────────────────────── */
+    var notice = document.getElementById('fme-saved-notice');
+    if ( notice ) {
+        function dismissNotice() { notice.classList.add('fme-notice-hiding'); }
+        setTimeout( dismissNotice, 5000 );
+        var noticeClose = notice.querySelector('.fme-notice-close');
+        if ( noticeClose ) { noticeClose.addEventListener( 'click', dismissNotice ); }
+    }
+
+    /* ── Reset settings modal (Tools page) ─────────────── */
+    var resetTrigger = document.getElementById('fme-reset-trigger');
+    var resetModal   = document.getElementById('fme-reset-modal');
+    var modalCancel  = document.getElementById('fme-modal-cancel');
+    var modalConfirm = document.getElementById('fme-modal-confirm');
+    var resetForm    = document.getElementById('fme-reset-form');
+
+    if ( resetTrigger && resetModal ) {
+        function openResetModal() {
+            resetModal.classList.add('fme-modal-open');
+            if ( modalCancel ) { modalCancel.focus(); }
+        }
+        function closeResetModal() {
+            resetModal.classList.remove('fme-modal-open');
+        }
+
+        resetTrigger.addEventListener( 'click', openResetModal );
+        if ( modalCancel )  { modalCancel.addEventListener(  'click', closeResetModal ); }
+        if ( modalConfirm ) { modalConfirm.addEventListener( 'click', function() { resetForm.submit(); } ); }
+
+        // Close on overlay click
+        resetModal.addEventListener( 'click', function(e) {
+            if ( e.target === resetModal ) { closeResetModal(); }
+        } );
+
+        // Close on Escape
+        document.addEventListener( 'keydown', function(e) {
+            if ( e.key === 'Escape' && resetModal.classList.contains('fme-modal-open') ) {
+                closeResetModal();
+            }
+        } );
+    }
+
+    /* ── Import settings modal (Tools page) ─────────────── */
+    var importTrigger      = document.getElementById('fme-import-trigger');
+    var importModal        = document.getElementById('fme-import-modal');
+    var importModalCancel  = document.getElementById('fme-import-modal-cancel');
+    var importModalConfirm = document.getElementById('fme-import-modal-confirm');
+    var importForm         = document.getElementById('fme-import-form');
+    var importFileInput    = document.getElementById('fme_import_file');
+
+    if ( importTrigger && importModal ) {
+        function openImportModal() {
+            // Require a file to be selected first
+            if ( ! importFileInput || ! importFileInput.value ) {
+                importFileInput && importFileInput.focus();
+                return;
+            }
+            importModal.classList.add('fme-modal-open');
+            if ( importModalCancel ) { importModalCancel.focus(); }
+        }
+        function closeImportModal() {
+            importModal.classList.remove('fme-modal-open');
+        }
+
+        importTrigger.addEventListener( 'click', openImportModal );
+        if ( importModalCancel )  { importModalCancel.addEventListener(  'click', closeImportModal ); }
+        if ( importModalConfirm ) { importModalConfirm.addEventListener( 'click', function() { importForm.submit(); } ); }
+
+        importModal.addEventListener( 'click', function(e) {
+            if ( e.target === importModal ) { closeImportModal(); }
+        } );
+
+        document.addEventListener( 'keydown', function(e) {
+            if ( e.key === 'Escape' && importModal.classList.contains('fme-modal-open') ) {
+                closeImportModal();
+            }
+        } );
     }
 
 }());

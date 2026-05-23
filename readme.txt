@@ -3,7 +3,7 @@ Contributors: lumiblog, dartiss, manuell, ocenchris
 Tags: bibliography, footnotes, formatting, reference
 Donate link: https://lumumbas-blog.co.ke/support-wp-plugins
 Requires at least: 4.6
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 3.2.0-beta.5
 License: GPLv2 or later
@@ -23,6 +23,10 @@ Footnotes Made Easy is a simple, but powerful, method of adding footnotes to you
 * Suppress footnotes on specific page types and custom URLs
 * Option to display 'pretty' tooltips using jQuery
 * Exclude footnotes from specific post categories
+* Lots of configuration options
+* Redesigned tabbed settings interface for easier navigation
+* Plugin usage stats on the About page (footnote counts across posts and pages)
+* Video tutorials built into the settings screen
 * And much, much more!
 
 **Footnotes Made Easy is a fork of [WP Footnotes](https://github.com/drzax/wp-footnotes "Github - wp-footnotes"), a plugin by Simon Elvery which was abandoned some years ago**.

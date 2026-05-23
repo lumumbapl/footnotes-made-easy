@@ -1,1063 +1,1094 @@
-/**
- * Footnotes Made Easy — Admin Settings UI
- * Redesigned settings page styles.
- * Scoped to #fme-settings-wrap to avoid bleeding into WP core styles.
- */
+/* =============================================================
+   Footnotes Made Easy — Admin Styles
+   Designed to match the CheckoutPress admin UI patterns.
+   ============================================================= */
 
-/* ── Reset & Base ─────────────────────────────────────────── */
-#fme-settings-wrap *,
-#fme-settings-wrap *::before,
-#fme-settings-wrap *::after {
+/* ---- Base -------------------------------------------------- */
+.fme-wrap {
+    box-sizing: border-box;
+    /* WP's .wrap adds margin-left:20px on top of #wpcontent's own
+       padding-left:20px. We zero that out and add equal padding on
+       both sides for comfortable breathing room. */
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 60px !important;
+    padding-right: 80px !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+.fme-wrap *,
+.fme-wrap *::before,
+.fme-wrap *::after {
     box-sizing: border-box;
 }
 
-/* ── Outer wrapper ────────────────────────────────────────── */
-#fme-settings-wrap {
-    --fme-accent:        #534AB7;
-    --fme-accent-hover:  #3C3489;
-    --fme-accent-light:  rgba(83, 74, 183, 0.10);
-    --fme-success:       #1D9E75;
-    --fme-warning-bg:    #FFFBEB;
-    --fme-warning-border:#FDE68A;
-    --fme-warning-text:  #92400E;
-    --fme-surface:       #ffffff;
-    --fme-bg:            #F4F5F7;
-    --fme-border:        #E2E4E9;
-    --fme-border-input:  #D0D3DC;
-    --fme-text:          #1A1A2E;
-    --fme-text-muted:    #6B7080;
-    --fme-radius-sm:     6px;
-    --fme-radius-md:     8px;
-    --fme-radius-lg:     12px;
-    --fme-shadow:        0 1px 3px rgba(0,0,0,0.08);
-
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--fme-bg);
-    padding-bottom: 3rem;
-    min-height: calc(100vh - 32px); /* 32px = WP admin bar */
-    margin-left:  0;
-    margin-right: 0;
-    margin-top:   0;
+/* Fix SVGs that get blown up by block-editor global CSS */
+.fme-wrap svg {
+    max-width: none !important;
+    overflow: visible;
 }
 
-/* ── Full-bleed background fix ────────────────────────────── */
-/*
- * Force the WP content column and body to share the same bg colour
- * so no white/grey gap appears below #fme-settings-wrap.
- * If --fme-bg ever changes, update these two hex values to match.
- */
-.settings_page_footnotes-options-page #wpbody-content {
-    background: #F4F5F7;
-    min-height: calc(100vh - 32px);
+/* Focus rings — keyboard nav only */
+.fme-wrap a:focus-visible,
+.fme-wrap button:focus-visible {
+    outline: 2px solid #534AB7 !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+}
+.fme-wrap a:focus:not(:focus-visible),
+.fme-wrap button:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
-.settings_page_footnotes-options-page #wpbody {
-    background: #F4F5F7;
+/* Inputs */
+.fme-wrap input:not([type="checkbox"]):not([type="submit"]):not([type="radio"]),
+.fme-wrap select,
+.fme-wrap textarea {
+    border-color: #dcdcde !important;
+    box-shadow: none !important;
+    transition: border-color .15s, border-width .1s !important;
+}
+.fme-wrap input:not([type="checkbox"]):not([type="submit"]):not([type="radio"]):focus,
+.fme-wrap select:focus,
+.fme-wrap textarea:focus {
+    border-color: #534AB7 !important;
+    border-width: 2px !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
-/* ── Top navigation bar ───────────────────────────────────── */
+/* Checkboxes */
+.fme-wrap input[type="checkbox"] {
+    accent-color: #534AB7;
+}
+
+/* ---- Top bar ----------------------------------------------- */
 .fme-topbar {
-    background: var(--fme-surface);
-    border-bottom: 1px solid var(--fme-border);
-    padding: 0 20px;
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    justify-content: space-between;
+    background: #fff;
+    border-bottom: 1px solid #e2e4e7;
+    /* No border-radius — full-width bar sits edge to edge */
+    margin-bottom: 1.75rem;
+    padding: 12px 80px 12px 80px;
+    /* Break out of .fme-wrap padding and span full #wpcontent width */
+    /* Cancel out fme-wrap left padding (60px) + #wpcontent left padding (20px) */
+    margin-left: -80px;
+    /* Cancel out fme-wrap right padding (80px) */
+    margin-right: -80px;
+    /* Sticky just below the WP admin bar (32px tall) */
     position: sticky;
-    top: 32px; /* WP admin bar */
-    z-index: 100;
+    top: 32px;
+    z-index: 900;
+    /* Subtle shadow so content scrolls underneath cleanly */
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 
-.fme-brand {
+.fme-topbar-brand {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 0.875rem 0;
-    margin-right: 1.25rem;
-    text-decoration: none;
 }
 
-.fme-brand-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: var(--fme-radius-sm);
-    background: var(--fme-accent);
+.fme-topbar-icon {
+    width: 28px;
+    height: 28px;
+    background: #534AB7;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
 
-.fme-brand-icon svg {
-    width: 18px;
-    height: 18px;
+.fme-topbar-icon svg {
+    width: 16px !important;
+    height: 16px !important;
     fill: #fff;
 }
 
-.fme-brand-name {
-    font-size: 14.5px;
+.fme-topbar-name {
+    font-size: 15px;
     font-weight: 600;
-    color: var(--fme-text);
-    white-space: nowrap;
+    color: #1d2327;
+    letter-spacing: -.01em;
 }
 
-.fme-brand-text {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-}
-
-.fme-brand-text .fme-brand-name {
-    align-self: stretch;
-}
-
-.fme-brand-text .fme-badge-new {
-    margin-left: 0;
-    align-self: flex-end;
-    font-size: 10px;
-    padding: 2px 7px;
-    letter-spacing: 0.04em;
-}
-
-.fme-tab-btn {
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    padding: 0.9rem 1rem;
-    font-size: 13.5px;
-    color: var(--fme-text-muted);
-    cursor: pointer;
-    margin-bottom: -1px;
-    transition: color 0.15s, border-color 0.15s;
-    font-family: inherit;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.fme-tab-btn:hover { color: var(--fme-text); }
-
-.fme-tab-btn.fme-active {
-    color: var(--fme-accent);
-    border-bottom-color: var(--fme-accent);
+.fme-version-badge {
+    font-size: 11px;
     font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #f0f0f1;
+    color: #646970;
 }
 
-.fme-tab-btn svg {
-    width: 14px;
-    height: 14px;
-    fill: currentColor;
-    opacity: 0.75;
+.fme-version-badge--pro {
+    background: #534AB7;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    font-size: 10px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
 }
 
-/* ── Content area ─────────────────────────────────────────── */
-.fme-content {
-    padding: 1.25rem 1.5rem;
-    max-width: 980px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-/* ── Rating banner ────────────────────────────────────────── */
-.fme-rating-banner {
-    background: var(--fme-surface);
-    border: 1px solid var(--fme-border);
-    border-radius: var(--fme-radius-lg);
-    padding: 1rem 1.25rem;
-    margin-bottom: 1.5rem;
+.fme-topbar-links {
     display: flex;
     align-items: center;
-    gap: 12px;
-    box-shadow: var(--fme-shadow);
-    overflow: hidden;
-    transition: opacity 0.3s, max-height 0.4s, margin 0.4s, padding 0.4s;
-    max-height: 120px;
+    gap: 16px;
 }
 
-.fme-rating-banner.fme-dismissed {
+.fme-topbar-links a {
+    font-size: 12px;
+    color: #646970;
+    text-decoration: none;
+}
+.fme-topbar-links a:hover { color: #534AB7; text-decoration: underline; }
+
+/* ---- Notices ---------------------------------------------- */
+.fme-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid transparent;
+}
+.fme-notice-success {
+    background: #EEF2FF;
+    color: #3730A3;
+    border-left-color: #534AB7;
+}
+.fme-notice-success svg { color: #534AB7; }
+
+.fme-notice-warning {
+    background: #fffbeb;
+    color: #78350f;
+    border-left-color: #f59e0b;
+}
+
+.fme-notice-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border-left-color: #ef4444;
+}
+
+.fme-notice-autodismiss {
+    transition: opacity .4s ease, margin .4s ease, padding .4s ease, max-height .4s ease;
+    max-height: 80px;
+    overflow: hidden;
+    position: relative;
+}
+.fme-notice-autodismiss.fme-notice-hiding {
     opacity: 0;
     max-height: 0;
     margin-bottom: 0;
     padding-top: 0;
     padding-bottom: 0;
 }
-
-/* Hidden server-side: no transition, no flash on page load */
-.fme-rating-banner.fme-banner-hidden {
-    display: none;
-}
-
-.fme-rating-heart { font-size: 20px; flex-shrink: 0; }
-
-.fme-rating-text {
-    flex: 1;
-    font-size: 13px;
-    color: var(--fme-text);
-    line-height: 1.55;
-}
-
-.fme-rating-stars { color: #F59E0B; letter-spacing: 1px; }
-
-.fme-rate-btn {
-    background: var(--fme-accent);
-    color: #fff !important;
-    border: none;
-    padding: 8px 16px;
-    border-radius: var(--fme-radius-md);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    text-decoration: none !important;
-    display: inline-block;
-    transition: background 0.15s;
-    flex-shrink: 0;
-}
-
-.fme-rate-btn:hover { background: var(--fme-accent-hover); }
-
-.fme-dismiss-btn {
-    background: transparent;
+.fme-notice-close {
+    margin-left: auto;
+    background: none;
     border: none;
     cursor: pointer;
-    color: var(--fme-text-muted);
-    font-size: 22px;
+    padding: 2px;
+    color: inherit;
+    opacity: .6;
     line-height: 1;
-    padding: 4px 6px;
     flex-shrink: 0;
-    transition: color 0.15s;
-    font-family: inherit;
 }
+.fme-notice-close:hover { opacity: 1; }
 
-.fme-dismiss-btn:hover { color: var(--fme-text); }
-
-/* ── Page header ──────────────────────────────────────────── */
-.fme-page-header {
+/* ---- Inner tabs (CheckoutPress style) --------------------- */
+.fme-inner-tabs {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    border-bottom: 1px solid #c3c4c7;
     margin-bottom: 1.5rem;
-    gap: 1rem;
+    flex-wrap: wrap;
 }
 
-.fme-page-title {
-    font-size: 20px;
+.fme-inner-tab {
+    display: inline-block;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 400;
+    color: #646970;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: inherit;
+    transition: color .15s;
+}
+.fme-inner-tab:hover { color: #1d2327; }
+.fme-inner-tab.fme-active {
+    font-weight: 700;
+    color: #1d2327;
+    border-bottom-color: #534AB7;
+}
+
+/* Citations Pro tab link */
+.fme-inner-tab--pro {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #646970; /* same as other tabs */
+}
+.fme-inner-tab--pro:hover {
+    color: #1d2327; /* same hover as other tabs */
+}
+.fme-pro-tab-badge {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: #534AB7;
+    color: #fff;
+    padding: 1px 5px;
+    border-radius: 3px;
+    line-height: 1.6;
+}
+
+/* ---- Settings grid (main + sidebar) ----------------------- */
+.fme-settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 20px;
+    align-items: start;
+}
+
+.fme-settings-main { min-width: 0; }
+.fme-settings-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+/* ---- Section --------------------------------------------- */
+.fme-section {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 6px;
+    padding: 0 1.25rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.fme-section-label {
+    font-size: 11px;
     font-weight: 600;
-    color: var(--fme-text);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #8c8f94;
+    border-bottom: 1px solid #f0f0f1;
+    padding: 14px 0 10px;
     margin: 0 0 4px;
 }
 
-.fme-page-sub {
+/* ---- Form table ------------------------------------------- */
+.fme-form-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+.fme-form-table tr {
+    border-bottom: 1px solid #f6f7f7;
+}
+.fme-form-table tr:last-child { border-bottom: none; }
+.fme-form-table th {
     font-size: 13px;
-    color: var(--fme-text-muted);
-    margin: 0;
+    font-weight: 600;
+    color: #1d2327;
+    padding: 14px 20px 14px 0;
+    width: 220px;
+    vertical-align: top;
+    text-align: left;
+}
+.fme-form-table td {
+    padding: 14px 0;
+    vertical-align: top;
+}
+.fme-form-table .description,
+.fme-form-table p.description {
+    font-size: 12px !important;
+    color: #646970 !important;
+    line-height: 1.6 !important;
+    font-style: normal !important;
+    margin-top: 5px !important;
+}
+.fme-form-table input[type="text"],
+.fme-form-table input[type="number"],
+.fme-form-table textarea,
+.fme-form-table select {
+    font-size: 13px;
+}
+.fme-form-table textarea {
+    width: 100%;
+    max-width: 460px;
 }
 
-.fme-save-btn {
-    background: var(--fme-accent);
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: var(--fme-radius-md);
-    font-size: 13.5px;
-    font-weight: 500;
+/* ---- Toggle switch --------------------------------------- */
+.fme-toggle {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
     cursor: pointer;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+.fme-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.fme-toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #8c8f94;
+    border-radius: 11px;
+    transition: background .2s;
+}
+.fme-toggle-slider:before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+}
+.fme-toggle input:checked + .fme-toggle-slider { background: #534AB7; }
+.fme-toggle input:checked + .fme-toggle-slider:before { transform: translateX(18px); }
+
+/* ---- Warning banner (Advanced tab) ----------------------- */
+.fme-warning-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-left: 4px solid #D97706;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 1.25rem;
+    font-size: 13px;
+    color: #92400E;
+    line-height: 1.55;
+}
+.fme-warning-banner svg {
+    width: 16px !important;
+    height: 16px !important;
+    fill: #D97706;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* ---- Inline inputs (identifier format) -------------------- */
+.fme-inline-inputs {
     display: flex;
     align-items: center;
-    gap: 7px;
-    transition: background 0.15s;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.fme-inline-inputs input[type="text"] { width: 56px; }
+.fme-inline-inputs select { font-size: 13px; }
+.fme-input-md  { width: 160px !important; }
+.fme-input-sm  { width: 80px  !important; }
+.fme-input-num { width: 72px  !important; }
+.fme-small-hint {
+    display: block;
+    font-size: 11.5px;
+    color: #8c8f94;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* ---- Badge ----------------------------------------------- */
+.fme-badge-new {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: #EEF2FF;
+    color: #534AB7;
+    margin-left: 6px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+/* ---- Sidebar cards --------------------------------------- */
+.fme-card {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.fme-card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f1;
+}
+.fme-card-head h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0;
+    flex: 1;
+}
+.fme-card-head .dashicons {
+    color: #646970;
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+}
+
+.fme-quicklinks { padding: 4px 0; }
+.fme-quicklink-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 16px;
+    font-size: 13px;
+    color: #3c434a;
+    text-decoration: none;
+    border-bottom: 1px solid #f6f7f7;
+    transition: background .1s, color .1s;
+}
+.fme-quicklink-row:last-child { border-bottom: none; }
+.fme-quicklink-row:hover { background: #f9f9fb; color: #534AB7; }
+.fme-quicklink-row svg {
+    width: 12px !important;
+    height: 12px !important;
+    color: #8c8f94;
+    flex-shrink: 0;
+    transition: color .1s;
+}
+.fme-quicklink-row:hover svg { color: #534AB7; }
+
+/* Review / rating card */
+.fme-review-card {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    padding: 20px;
+}
+.fme-review-card__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #EEF2FF;
+    color: #534AB7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    animation: fme-heart-pulse 2.4s ease-in-out infinite;
+}
+.fme-review-card__icon svg {
+    width: 18px !important;
+    height: 18px !important;
+    fill: currentColor;
+}
+@keyframes fme-heart-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.12); opacity: .75; }
+}
+.fme-review-card__heading {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1d2327;
+    margin: 0 0 8px;
+}
+.fme-review-card__text {
+    font-size: 12px;
+    color: #646970;
+    line-height: 1.6;
+    margin: 0 0 14px;
+}
+.fme-review-card__stars {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 16px;
+    color: #534AB7;
+}
+.fme-review-card__stars svg {
+    width: 20px !important;
+    height: 20px !important;
+    fill: currentColor;
+}
+.fme-review-card__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #534AB7;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background .15s;
+}
+.fme-review-card__btn:hover { background: #3C3489; color: #fff; }
+.fme-review-card__btn svg {
+    width: 12px !important;
+    height: 12px !important;
+}
+
+/* ---- Submit button ---------------------------------------- */
+.fme-submit-row {
+    margin-top: 1.5rem;
+}
+
+.button-primary,
+.button-primary:visited {
+    background: #534AB7 !important;
+    border-color: #3C3489 !important;
+    color: #fff !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+}
+.button-primary:hover,
+.button-primary:focus {
+    background: #3C3489 !important;
+    border-color: #2D2870 !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 2px rgba(83,74,183,.25) !important;
+    text-shadow: none !important;
+}
+
+/* ---- Dashboard layout ------------------------------------ */
+.fme-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 1.5rem;
+}
+.fme-dashboard__main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+.fme-dashboard__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+/* Welcome strip */
+.fme-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 10px;
+    padding: 28px 32px;
+    overflow: hidden;
+}
+
+.fme-welcome__text {
+    flex: 1;
+    min-width: 0;
+}
+
+.fme-welcome__heading {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1d2327;
+    margin: 0 0 8px;
+    line-height: 1.25;
+    letter-spacing: -.02em;
+}
+.fme-welcome__sub {
+    font-size: 13px;
+    color: #646970;
+    line-height: 1.6;
+    margin: 0 0 20px;
+    max-width: 420px;
+}
+
+.fme-welcome__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Watch Video — solid purple */
+.fme-welcome__btn-video {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #534AB7;
+    color: #fff;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
     font-family: inherit;
+    transition: background .15s;
+}
+.fme-welcome__btn-video:hover { background: #3C3489; color: #fff; }
+.fme-welcome__btn-video svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+/* Open Settings — ghost with purple border */
+.fme-welcome__btn-settings {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    color: #534AB7;
+    border: 2px solid #A5B4FC;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color .15s, background .15s;
+}
+.fme-welcome__btn-settings:hover {
+    border-color: #534AB7;
+    background: #EEF2FF;
+    color: #534AB7;
+    text-decoration: none;
+}
+.fme-welcome__btn-settings svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+.fme-welcome__graphic {
+    flex-shrink: 0;
+    width: 180px;
+    opacity: .9;
+}
+.fme-welcome__graphic svg {
+    width: 100% !important;
+    height: auto !important;
+    display: block;
+}
+
+/* Stats grid */
+.fme-stats-card {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.fme-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+}
+.fme-stat-item {
+    padding: 20px;
+    border-right: 1px solid #f0f0f1;
+    text-align: center;
+}
+.fme-stat-item:last-child { border-right: none; }
+.fme-stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1d2327;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.fme-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #8c8f94;
+}
+
+/* ---- Page footer ----------------------------------------- */
+.fme-page-footer {
+    margin-top: 2.5rem;
+    padding: 1.75rem 0 1rem;
+    border-top: 1px solid #e2e4e7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+}
+.fme-page-footer__brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #8c8f94;
+    font-weight: 500;
+}
+.fme-page-footer__heart {
+    width: 14px;
+    height: 14px;
+    fill: #534AB7;
+    flex-shrink: 0;
+    position: relative;
+    top: -1px;
+}
+.fme-page-footer__links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+}
+.fme-page-footer__links a {
+    font-size: 12px;
+    color: #8c8f94;
+    text-decoration: none;
+    padding: 2px 4px;
+    transition: color .15s;
+}
+.fme-page-footer__links a:hover { color: #534AB7; }
+.fme-page-footer__sep {
+    font-size: 12px;
+    color: #c3c4c7;
+}
+.fme-page-footer__social {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.fme-page-footer__social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c3c4c7;
+    transition: color .15s;
+    text-decoration: none;
+}
+.fme-page-footer__social-link:hover { color: #534AB7; }
+.fme-page-footer__social-link svg {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+/* ---- Help page layout ------------------------------------ */
+.fme-help-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 1.5rem;
+}
+.fme-help-main { min-width: 0; }
+.fme-help-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.fme-help-section {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+}
+.fme-help-section__head {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f1;
+}
+.fme-help-section__head h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1d2327;
+    margin: 0;
+}
+.fme-help-section__body { padding: 0; }
+
+.fme-faq-item {
+    border-bottom: 1px solid #f6f7f7;
+    padding: 16px 20px;
+}
+.fme-faq-item:last-child { border-bottom: none; }
+.fme-faq-q {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 6px;
+}
+.fme-faq-a {
+    font-size: 13px;
+    color: #646970;
+    line-height: 1.6;
+    margin: 0;
+}
+.fme-faq-a code {
+    font-family: monospace;
+    background: #f6f7f7;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.fme-code-block {
+    background: #f6f7f7;
+    border: 1px solid #e2e4e7;
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #1d2327;
+    margin: 12px 0 4px;
+}
+
+.fme-placeholder-card {
+    border: 2px dashed #e2e4e7;
+    border-radius: 8px;
+    padding: 40px 24px;
+    text-align: center;
+    background: transparent;
+}
+.fme-placeholder-card svg {
+    width: 32px !important;
+    height: 32px !important;
+    fill: #c3c4c7;
+    display: block;
+    margin: 0 auto 12px;
+}
+.fme-placeholder-card__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 6px;
+}
+.fme-placeholder-card__text {
+    font-size: 13px;
+    color: #646970;
+    margin: 0 auto;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
+/* ---- Responsive ------------------------------------------ */
+@media screen and (max-width: 782px) {
+    /* WP admin bar is hidden at this width — topbar sticks to very top */
+    .fme-topbar { top: 0; }
+    .fme-wrap {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    .fme-topbar {
+        margin-left: -30px; /* cancel wpcontent(20px) + wrap padding-left(10px) */
+        margin-right: -10px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+@media screen and (max-width: 960px) {
+    .fme-settings-grid,
+    .fme-dashboard,
+    .fme-help-grid {
+        grid-template-columns: 1fr;
+    }
+    .fme-stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media screen and (max-width: 600px) {
+    .fme-wrap {
+        /* Remove the large desktop padding — wpcontent's 20px left is enough */
+        padding-left: 0 !important;
+        padding-right: 10px !important;
+    }
+    .fme-topbar {
+        padding: 10px 20px;
+        /* Cancel wpcontent left padding (20px) + our wrap padding-left (0) */
+        margin-left: -20px;
+        /* Cancel our wrap padding-right (10px) */
+        margin-right: -10px;
+        /* WP admin bar is hidden on mobile admin screens */
+        top: 0;
+    }
+    .fme-topbar-name { font-size: 13px; }
+    .fme-version-badge { display: none; }
+    .fme-version-badge--pro { display: inline-flex; } /* always show PRO badge even on mobile */
+    .fme-inner-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+    .fme-inner-tab { white-space: nowrap; font-size: 12px; padding: 8px 10px; }
+    .fme-form-table th { width: 100%; display: block; padding-bottom: 4px; }
+    .fme-form-table td { display: block; padding-top: 0; }
+    .fme-form-table tr { display: block; padding: 10px 0; border-bottom: 1px solid #f0f0f1; }
+    .fme-stats-grid { grid-template-columns: repeat(3, 1fr); }
+    .fme-welcome { flex-direction: column; align-items: flex-start; padding: 20px; gap: 16px; }
+    .fme-welcome__graphic { display: none; }
+    .fme-welcome__heading { font-size: 16px; }
+}
+
+/* ── Tools page ───────────────────────────────────────── */
+.fme-reset-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 7px;
+    background: #fff !important;
+    color: #b32d2e !important;
+    border: 1px solid #b32d2e !important;
+    border-radius: 6px !important;
+    padding: 7px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s !important;
+}
+.fme-reset-btn:hover {
+    background: #b32d2e !important;
+    color: #fff !important;
+}
+.fme-reset-btn svg {
+    fill: currentColor;
     flex-shrink: 0;
 }
 
-.fme-save-btn:hover { background: var(--fme-accent-hover); }
+/* ── Save button (shared across Settings, Tools, and any page using fme-save-btn) */
+.fme-form-footer {
+    display: flex;
+    align-items: center;
+    padding: 20px 0 4px;
+    border-top: 1px solid #e2e4e7;
+    margin-top: 8px;
+}
 
+.fme-save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #534AB7;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-decoration: none;
+    font-family: inherit;
+}
+.fme-save-btn:hover {
+    background: #433aa0;
+    color: #fff;
+}
 .fme-save-btn svg {
     width: 14px;
     height: 14px;
     fill: currentColor;
-}
-
-/* ── Tab panels ───────────────────────────────────────────── */
-.fme-tab-panel { display: none; }
-
-.fme-tab-panel.fme-active {
-    display: block;
-    animation: fmeFadeIn 0.18s ease;
-}
-
-@keyframes fmeFadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Cards ────────────────────────────────────────────────── */
-.fme-card {
-    background: var(--fme-surface);
-    border: 1px solid var(--fme-border);
-    border-radius: var(--fme-radius-lg);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    box-shadow: var(--fme-shadow);
-}
-
-.fme-card-title {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--fme-text);
-    margin: 0 0 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--fme-border);
-}
-
-.fme-card-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0 0 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--fme-border);
-}
-
-.fme-card-title-row .fme-card-title {
-    margin: 0;
-    padding: 0;
-    border: none;
-}
-
-.fme-more-tutorials-btn {
-    background: var(--fme-accent) !important;
-    color: #fff !important;
-    border: none !important;
-    padding: 8px 16px !important;
-    border-radius: var(--fme-radius-md) !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    cursor: pointer;
-    white-space: nowrap;
-    text-decoration: none !important;
-    display: inline-block;
-    transition: background 0.15s;
     flex-shrink: 0;
-    box-shadow: none !important;
-    line-height: 1.5 !important;
 }
 
-.fme-more-tutorials-btn:hover,
-.fme-more-tutorials-btn:focus {
-    background: var(--fme-accent-hover) !important;
-    color: #fff !important;
-    box-shadow: none !important;
-}
-
-.fme-badge-new {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1;
-    padding: 3px 8px;
-    border-radius: 20px;
-    background: #dbeafe;
-    color: #1e40af;
-    vertical-align: middle;
-    margin-left: 6px;
-    letter-spacing: 0.01em;
-}
-
-/* ── Field rows ───────────────────────────────────────────── */
-.fme-field-row {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    gap: 1rem;
-    align-items: start;
-    padding: 0.8rem 0;
-    border-bottom: 1px solid var(--fme-border);
-}
-
-.fme-field-row:last-child { border-bottom: none; padding-bottom: 0; }
-.fme-field-row:first-child { padding-top: 0; }
-
-.fme-field-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--fme-text);
-    padding-top: 8px;
-}
-
-.fme-field-hint {
-    font-size: 12px;
-    color: var(--fme-text-muted);
-    margin-top: 4px;
-    line-height: 1.55;
-    font-weight: 400;
-}
-
-.fme-field-input {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-/* ── Inputs ───────────────────────────────────────────────── */
-#fme-settings-wrap input[type="text"],
-#fme-settings-wrap input[type="number"],
-#fme-settings-wrap select,
-#fme-settings-wrap textarea {
-    background: var(--fme-surface);
-    border: 1px solid var(--fme-border-input);
-    border-radius: var(--fme-radius-md);
-    padding: 7px 10px;
-    font-size: 13px;
-    color: var(--fme-text);
-    font-family: inherit;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    width: 100%;
-    margin: 0;
-}
-
-#fme-settings-wrap input[type="text"]:focus,
-#fme-settings-wrap input[type="number"]:focus,
-#fme-settings-wrap select:focus,
-#fme-settings-wrap textarea:focus {
-    outline: none;
-    border-color: var(--fme-accent);
-    box-shadow: 0 0 0 3px var(--fme-accent-light);
-}
-
-#fme-settings-wrap textarea {
-    resize: vertical;
-    min-height: 80px;
-    font-family: 'Courier New', monospace;
-    font-size: 12.5px;
-}
-
-.fme-inline-inputs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-}
-
-.fme-inline-inputs input[type="text"] { width: 72px !important; }
-.fme-inline-inputs select { width: 145px !important; }
-.fme-input-sm  { width: 80px !important; }
-.fme-input-md  { width: 130px !important; }
-.fme-input-num { width: 78px !important; }
-
-.fme-small-hint {
-    font-size: 12px;
-    color: var(--fme-text-muted);
-    line-height: 1.5;
-}
-
-/* ── Toggle rows ──────────────────────────────────────────── */
-.fme-toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.8rem 0;
-    border-bottom: 1px solid var(--fme-border);
-}
-
-.fme-toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
-.fme-toggle-row:first-child { padding-top: 0; }
-
-.fme-toggle-label { flex: 1; padding-right: 1.5rem; }
-
-.fme-toggle-label-text {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--fme-text);
-}
-
-.fme-toggle-label-hint {
-    font-size: 12px;
-    color: var(--fme-text-muted);
-    margin-top: 3px;
-    line-height: 1.5;
-}
-
-.fme-toggle-switch {
-    position: relative;
-    width: 42px;
-    height: 24px;
-    flex-shrink: 0;
-    display: block;
-}
-
-.fme-toggle-switch input[type="checkbox"] {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    position: absolute;
-    margin: 0;
-}
-
-.fme-toggle-track {
-    position: absolute;
+/* ── Reset confirmation modal ──────────────────────── */
+.fme-modal-overlay {
+    display: none;
+    position: fixed;
     inset: 0;
-    border-radius: 12px;
-    background: var(--fme-border-input);
-    cursor: pointer;
-    transition: background 0.2s;
+    background: rgba(0,0,0,0.5);
+    z-index: 100000;
+    align-items: center;
+    justify-content: center;
 }
-
-.fme-toggle-switch input:checked + .fme-toggle-track {
-    background: var(--fme-accent);
+.fme-modal-overlay.fme-modal-open {
+    display: flex;
 }
-
-.fme-toggle-thumb {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
+.fme-modal {
     background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    transition: transform 0.2s;
-    pointer-events: none;
-}
-
-.fme-toggle-switch input:checked ~ .fme-toggle-thumb {
-    transform: translateX(18px);
-}
-
-/* ── Warning banner ───────────────────────────────────────── */
-.fme-warning-banner {
-    background: var(--fme-warning-bg);
-    border: 1px solid var(--fme-warning-border);
-    border-radius: var(--fme-radius-md);
-    padding: 0.875rem 1rem;
-    margin-bottom: 1rem;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.fme-warning-icon {
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
-    flex-shrink: 0;
-    fill: var(--fme-warning-text);
-}
-
-.fme-warning-text {
-    font-size: 13px;
-    color: var(--fme-warning-text);
-    line-height: 1.55;
-}
-
-/* ── Success notice ───────────────────────────────────────── */
-.fme-notice-saved {
-    background: #ECFDF5;
-    border: 1px solid #6EE7B7;
-    border-radius: var(--fme-radius-md);
-    padding: 0.75rem 1rem;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #065F46;
-    font-weight: 500;
-    transition: opacity 0.6s ease, max-height 0.5s ease, margin-bottom 0.5s ease, padding 0.5s ease;
-    overflow: hidden;
-    max-height: 80px;
-}
-
-.fme-notice-saved svg {
-    width: 16px;
-    height: 16px;
-    fill: #059669;
-    flex-shrink: 0;
-}
-
-.fme-notice-saved.fme-notice-hiding {
-    opacity: 0;
-    max-height: 0;
-    margin-bottom: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-}
-
-/* ── Full-width topbar fix ────────────────────────────────── */
-/*
- * Remove padding from the WP .wrap parent and compensate on
- * the topbar itself. overflow-x: hidden kills any stray scroll.
- */
-.settings_page_footnotes-options-page #wpbody-content .wrap {
-    padding-top:   0 !important;
-    margin-top:    0 !important;
-    padding-left:  0 !important;
-    padding-right: 0 !important;
-    overflow-x:    hidden;
-}
-
-/* Hide WP's own .wrap h1 title — our topbar has the branding */
-.settings_page_footnotes-options-page #wpbody-content > .wrap > h1 {
-    display: none !important;
-}
-
-/* ── Form footer (bottom save button) ────────────────────── */
-.fme-form-footer {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 0.5rem;
-    margin-top: 0.25rem;
-}
-
-/* ── Responsive topbar — small screens ───────────────────── */
-/*
- * On narrow viewports (WP collapsed sidebar ≈ 783 px breakpoint,
- * folded/tablet devices even narrower) the topbar can overflow.
- * Strategy: let the tab strip scroll horizontally inside the bar
- * while the brand stays pinned left. No hamburger needed.
- *
- * Mirrors the Media Sweep plugin approach visible in QA screenshots.
- */
-
-/* Shared across all narrow widths: make the topbar a two-row flex
-   container so brand and tabs are clearly separated. */
-@media (max-width: 900px) {
-
-    .fme-topbar {
-        flex-wrap: nowrap;           /* keep everything on one line     */
-        padding: 0;                  /* remove side padding; tabs supply their own */
-        overflow: hidden;            /* clip anything that tries to escape  */
-    }
-
-    /* Brand: fixed-width pill on the left, never shrinks or scrolls */
-    .fme-brand {
-        flex-shrink: 0;
-        padding: 0.75rem 14px;
-        margin-right: 0;
-        border-right: 1px solid var(--fme-border);
-    }
-
-    /* Hide the text label and FREE badge; keep the icon so the brand still reads */
-    .fme-brand-name,
-    .fme-brand-text {
-        display: none;
-    }
-
-    /* Tab strip: takes the remaining width and scrolls horizontally.
-       "momentum" scrolling on iOS, hidden scrollbar on all browsers. */
-    .fme-topbar .fme-tab-btn:first-of-type,
-    .fme-topbar .fme-tab-btn {
-        /* Tabs live directly inside .fme-topbar; we turn the topbar
-           itself into a scroll container via the rule above, so we
-           just need the tabs to not shrink. */
-        flex-shrink: 0;
-        padding: 0.85rem 0.875rem;
-        font-size: 13px;
-    }
-
-    /* Wrap the tab buttons in a scrollable region.
-       Because the HTML doesn't have a wrapper div we use a pseudo
-       approach: allow the topbar to scroll while brand is sticky. */
-    .fme-topbar {
-        display: flex;
-        align-items: stretch;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;          /* Firefox: hide scrollbar    */
-    }
-    .fme-topbar::-webkit-scrollbar {
-        display: none;                  /* Chrome/Safari: hide scrollbar */
-    }
-
-    /* Re-pin the brand so it doesn't scroll away.
-       Uses sticky positioning inside the flex row. */
-    .fme-brand {
-        position: sticky;
-        left: 0;
-        z-index: 2;
-        background: var(--fme-surface);
-    }
-}
-
-/* Tighten further on very small screens (phones in landscape,
-   folded devices, the Asus Zenbook Fold at ~853 px logical) */
-@media (max-width: 600px) {
-
-    .fme-tab-btn {
-        padding: 0.8rem 0.75rem;
-        font-size: 12.5px;
-        gap: 4px;
-    }
-
-    /* Show only the icon on the smallest breakpoint — keeps each
-       button compact while remaining fully tappable (≥ 44 px tall). */
-    .fme-tab-btn span,
-    .fme-tab-btn > :not(svg) {
-        display: none;
-    }
-
-    /* Widen the icon slightly so icon-only buttons read clearly */
-    .fme-tab-btn svg {
-        width: 16px;
-        height: 16px;
-        opacity: 1;
-    }
-
-    /* Active state: underline accent still visible */
-    .fme-tab-btn.fme-active svg {
-        opacity: 1;
-    }
-}
-
-/* ── Responsive field rows — small screens ───────────────── */
-/*
- * Root cause: grid-template-columns: 200px 1fr
- * The fixed 200px label column leaves too little room for the input
- * column on narrow viewports, causing fields to overflow the card.
- *
- * Fix: stack label above input at ≤ 600px (single-column layout).
- * No layout change on desktop — only narrow screens are affected.
- */
-@media (max-width: 600px) {
-
-    .fme-field-row {
-        grid-template-columns: 1fr;  /* single column: label above input */
-        gap: 0.4rem;
-    }
-
-    /* Give the label a little breathing room below the hint text */
-    .fme-field-label {
-        padding-top: 0;
-    }
-
-    /* Inputs already have width: 100% so they fill the card nicely.
-       Remove any explicit width overrides that were fine on desktop
-       but look awkward stacked (e.g. fme-input-sm, fme-input-md). */
-    #fme-settings-wrap .fme-input-sm,
-    #fme-settings-wrap .fme-input-md,
-    #fme-settings-wrap .fme-input-num {
-        width: 100% !important;
-    }
-
-    /* Inline input groups (colour + select combos etc.) should also
-       flow to full width rather than wrapping at their fixed sizes. */
-    .fme-inline-inputs input[type="text"],
-    .fme-inline-inputs select {
-        width: 100% !important;
-    }
-}
-
-/* A slightly wider breakpoint just for the label-column width —
-   shrink from 200px → 150px in the 600–780px range so cards don't
-   feel cramped on tablets with the WP sidebar collapsed. */
-@media (min-width: 601px) and (max-width: 780px) {
-
-    .fme-field-row {
-        grid-template-columns: 150px 1fr;
-    }
-}
-
-/* ── Sticky topbar fix ────────────────────────────────────── */
-/*
- * PROBLEM: `overflow-x: hidden` on .wrap (set above for full-bleed)
- * creates a new scroll container, which silently kills
- * `position: sticky` on .fme-topbar — the browser can no longer
- * measure scroll relative to the viewport.
- *
- * FIX: Replace overflow-x: hidden with overflow-x: clip.
- * `clip` prevents overflow painting without establishing a scroll
- * container, so sticky works correctly again. Supported in all
- * browsers that matter for WP admin (Chrome 90+, Firefox 81+,
- * Safari 16+).
- *
- * Also fix the `top` offset on small screens: WP collapses its
- * admin bar from 32px → 46px tall on narrow viewports (≤782px),
- * then hides it entirely below 600px in some configs.
- */
-
-/* Override the overflow-x: hidden set in the full-width topbar fix */
-.settings_page_footnotes-options-page #wpbody-content .wrap {
-    overflow-x: clip !important;  /* clip ≠ hidden: no scroll container */
-}
-
-/* WP admin bar is 46px tall at ≤782px */
-@media (max-width: 782px) {
-    .fme-topbar {
-        top: 46px;
-    }
-}
-
-/* WP admin bar is hidden (moved off-screen) at ≤600px */
-@media (max-width: 600px) {
-    .fme-topbar {
-        top: 0;
-    }
-}
-
-/* ── Rating banner responsive ─────────────────────────────── */
-/*
- * On small screens the banner becomes a 3-column flex row that
- * looks cramped. Desired layout:
- *   - Close (×) button pinned top-right
- *   - Heart + text stacked naturally
- *   - "Rate Plugin" button full-width below the text
- */
-@media (max-width: 600px) {
-
-    .fme-rating-banner {
-        flex-wrap: wrap;
-        align-items: flex-start;
-        position: relative;          /* anchor for the dismiss button   */
-        padding: 0.9rem 1rem 1rem;
-        max-height: none;            /* allow taller collapsed height   */
-        gap: 8px;
-    }
-
-    /* Bump the transition max-height so the dismiss animation still
-       works now that the banner is taller on mobile */
-    .fme-rating-banner:not(.fme-dismissed) {
-        max-height: 200px;
-    }
-
-    .fme-rating-heart {
-        padding-top: 2px;
-    }
-
-    .fme-rating-text {
-        /* Take all space except the heart icon; dismiss btn is absolute */
-        flex: 1;
-        padding-right: 2rem;         /* clear the absolute dismiss btn  */
-    }
-
-    /* Full-width Rate Plugin button below text */
-    .fme-rate-btn {
-        width: 100%;
-        text-align: center;
-        order: 3;                    /* push after heart + text          */
-        padding: 10px 16px;
-    }
-
-    /* Pin dismiss button to top-right of the banner card */
-    .fme-dismiss-btn {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        padding: 2px 4px;
-    }
-}
-
-/* ════════════════════════════════════════════════════════════
-   About tab
-════════════════════════════════════════════════════════════ */
-
-/* Metric cards row */
-.fme-about-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 1rem;
-}
-.fme-about-metric {
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+    padding: 32px 36px;
+    max-width: 420px;
+    width: 90%;
     text-align: center;
 }
-.fme-about-metric:nth-child(1) { background: #eeedfe; }
-.fme-about-metric:nth-child(2) { background: #e1f5ee; }
-.fme-about-metric:nth-child(3) { background: #faece7; }
-.fme-about-metric-label {
-    font-size: 12px;
-    color: #534ab7;
-    margin: 0 0 6px;
-}
-.fme-about-metric:nth-child(2) .fme-about-metric-label { color: #0f6e56; }
-.fme-about-metric:nth-child(3) .fme-about-metric-label { color: #993c1d; }
-.fme-about-metric-value {
-    font-size: 26px;
-    font-weight: 500;
-    color: #1d2327;
-    margin: 0;
-}
-.fme-about-metric-desc {
-    font-size: 11px;
-    color: #666;
-    margin: 4px 0 0;
-}
-
-/* Two-column grid (stats + versions) */
-.fme-about-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-/* Stat rows inside content card */
-.fme-about-stat-row {
+.fme-modal__icon {
+    width: 52px;
+    height: 52px;
+    background: #fef2f2;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 0.5px solid #e0e0e0;
+    justify-content: center;
+    margin: 0 auto 16px;
+    color: #b32d2e;
 }
-.fme-about-stat-last { border-bottom: none; padding-bottom: 0; }
-.fme-about-stat-left { display: flex; align-items: center; gap: 10px; }
-.fme-about-stat-right { display: flex; align-items: center; gap: 12px; }
-.fme-about-stat-icon {
-    width: 32px; height: 32px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+.fme-modal__icon svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
 }
-.fme-about-stat-icon svg { width: 16px; height: 16px; }
-.fme-about-icon-purple { background: #eeedfe; }
-.fme-about-icon-purple svg { fill: #534ab7; }
-.fme-about-icon-teal   { background: #e1f5ee; }
-.fme-about-icon-teal svg   { fill: #0f6e56; }
-.fme-about-icon-coral  { background: #faece7; }
-.fme-about-icon-coral svg  { fill: #993c1d; }
-.fme-about-stat-label  { font-size: 13px; color: #1d2327; }
-.fme-about-stat-value  { font-size: 15px; font-weight: 500; color: #1d2327; }
-.fme-about-link        { font-size: 13px; color: #534ab7; text-decoration: none; }
-.fme-about-link:hover  { text-decoration: underline; }
-
-/* Version rows */
-.fme-about-version-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 0; border-bottom: 0.5px solid #e0e0e0;
+.fme-modal__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1d2327;
+    margin: 0 0 8px;
 }
-.fme-about-version-last { border-bottom: none; padding-bottom: 0; }
-.fme-about-check {
-    width: 22px; height: 22px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+.fme-modal__desc {
+    font-size: 13px;
+    color: #646970;
+    line-height: 1.6;
+    margin: 0 0 24px;
 }
-.fme-about-check svg { width: 12px; height: 12px; fill: #fff; }
-.fme-about-check-ok   { background: #534ab7; }
-.fme-about-check-warn { background: #854f0b; }
-.fme-about-version-info { flex: 1; }
-.fme-about-version-title { font-size: 13px; font-weight: 500; color: #1d2327; margin: 0; }
-.fme-about-version-sub   { font-size: 12px; color: #666; margin: 2px 0 0; }
-.fme-about-badge {
-    font-size: 11px; padding: 3px 10px;
-    border-radius: 20px; font-weight: 500; white-space: nowrap;
-}
-.fme-about-badge-green { background: #eaf3de; color: #27500a; }
-.fme-about-badge-amber { background: #faeeda; color: #633806; }
-
-/* ── Tutorials slider ─────────────────────────────────────── */
-.fme-about-section { margin-bottom: 1rem; }
-
-/*
- * The slider wrap clips cards as they slide out of view.
- * overflow: hidden is required here — unlike on .wrap above, this
- * element is not a sticky ancestor so hidden doesn't kill anything.
- * position: relative is the anchor for the prev/next buttons.
- */
-.fme-about-slider-wrap {
-    position: relative;
-    overflow: hidden; /* clips cards that have slid out of the visible 3-up window */
-}
-
-.fme-about-tutorials {
+.fme-modal__actions {
     display: flex;
-    gap: 12px;
-    overflow: hidden; /* fallback when no slider wrap is present (≤3 videos) */
+    gap: 10px;
+    justify-content: center;
 }
-
-.fme-about-tutorial {
-    flex: 0 0 calc(33.333% - 8px);
-    border: 0.5px solid #e0e0e0;
-    border-radius: 8px; overflow: hidden; cursor: pointer;
+.fme-modal__cancel {
+    flex: 1;
+    padding: 9px 16px;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    background: #fff;
+    color: #3c434a;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
     transition: border-color 0.15s;
 }
-.fme-about-tutorial:hover { border-color: #7f77dd; }
-
-/* YouTube thumbnail */
-.fme-about-thumb {
-    position: relative; aspect-ratio: 16/9;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden; background: #eeedfe; /* fallback while img loads */
+.fme-modal__cancel:hover {
+    border-color: #8c8f94;
 }
-.fme-about-thumb img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
-}
-
-/* Play button overlay */
-.fme-about-play {
-    position: absolute;
-    width: 44px; height: 44px; background: rgba(83,74,183,0.9);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+.fme-modal__confirm {
+    flex: 1;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #b32d2e;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
     transition: background 0.15s;
 }
-.fme-about-tutorial:hover .fme-about-play { background: #534ab7; }
-.fme-about-play svg { width: 16px; height: 16px; fill: #fff; margin-left: 3px; }
-
-.fme-about-tut-info  { padding: 10px 12px; }
-.fme-about-tut-title { font-size: 12px; font-weight: 500; color: #1d2327; margin: 0 0 3px; line-height: 1.4; }
-.fme-about-tut-meta  { font-size: 11px; color: #999; margin: 0; }
-
-/* Slider prev / next buttons */
-.fme-slider-btn {
-    position: absolute; top: 38%; transform: translateY(-50%);
-    width: 28px; height: 28px; border-radius: 50%;
-    background: #fff; border: 0.5px solid #e0e0e0;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 2; transition: border-color 0.15s;
-}
-.fme-slider-btn:hover { border-color: #534ab7; }
-.fme-slider-btn svg { width: 14px; height: 14px; fill: #534ab7; }
-.fme-slider-btn-prev { left: -14px; }
-.fme-slider-btn-next { right: -14px; }
-.fme-slider-btn[disabled] { opacity: 0.3; pointer-events: none; }
-
-/* Dots navigation */
-.fme-slider-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
-.fme-slider-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: #d0cef7; border: none; padding: 0;
-    cursor: pointer; transition: background 0.15s;
-}
-.fme-slider-dot.active { background: #534ab7; }
-
-/* ── Links row ────────────────────────────────────────────── */
-.fme-about-links {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-.fme-about-link-card {
-    display: flex; align-items: center; gap: 12px;
-    padding: 1rem 1.25rem; background: #fff;
-    border: 0.5px solid #e0e0e0; border-radius: 12px;
-    text-decoration: none; transition: border-color 0.15s;
-}
-.fme-about-link-card:hover { border-color: #7f77dd; }
-.fme-about-link-icon {
-    width: 36px; height: 36px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.fme-about-link-icon svg { width: 18px; height: 18px; }
-.fme-about-link-title { font-size: 13px; font-weight: 500; color: #1d2327; margin: 0; }
-.fme-about-link-sub   { font-size: 11px; color: #666; margin: 2px 0 0; }
-.fme-about-link-arrow { margin-left: auto; color: #999; font-size: 16px; }
-
-/* ── About tab responsive ─────────────────────────────────── */
-@media ( max-width: 782px ) {
-    .fme-about-metrics,
-    .fme-about-grid,
-    .fme-about-links { grid-template-columns: 1fr; }
-
-    /*
-     * On narrow screens the 3-up layout collapses to single-column.
-     * Switch the flex container to a vertical column so all three
-     * cards are visible stacked on top of each other.
-     */
-    .fme-about-tutorials {
-        flex-direction: column;
-        overflow: visible;
-    }
-
-    .fme-about-tutorial {
-        flex: 0 0 auto;
-        width: 100%;
-    }
+.fme-modal__confirm:hover {
+    background: #931f20;
 }

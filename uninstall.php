@@ -1,28 +1,24 @@
 <?php
 /**
- * Uninstaller
+ * Uninstaller — Footnotes Made Easy
  *
- * Removes all data stored by Footnotes Made Easy when the plugin
- * is deleted via the WordPress admin. Covers:
- *
- *  - swas_footnote_options         — main settings (options table)
- *  - fme_rating_banner             — per-user rating-banner state (usermeta)
- *  - fme_banner_seeded_version     — per-user banner version flag (usermeta)
+ * Runs when the plugin is deleted from the WordPress admin.
+ * Respects the "Preserve settings on uninstall" option from the Tools page.
+ * If preserve is enabled, all settings are kept.
+ * If disabled (default), all plugin data is removed and options reset to defaults.
  *
  * @package footnotes-made-easy
- * @since   1.0
  */
 
-// Bail if WordPress did not trigger this uninstall.
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-	exit;
+    exit;
 }
 
-// ── 1. Plugin settings ────────────────────────────────────────
-delete_option( 'swas_footnote_options' );
+// If the user chose to preserve settings, do nothing.
+if ( get_option( 'fme_preserve_settings_on_uninstall' ) === '1' ) {
+    return;
+}
 
-// ── 2. Per-user meta added by the rating banner ───────────────
-// Passing 0 as user_id and true as $delete_all removes the meta key
-// from every user in one query.
-delete_metadata( 'user', 0, 'fme_rating_banner',         '', true );
-delete_metadata( 'user', 0, 'fme_banner_seeded_version', '', true );
+// Remove all plugin options.
+delete_option( 'swas_footnote_options' );
+delete_option( 'fme_preserve_settings_on_uninstall' );

@@ -1,4 +1,6 @@
 <?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Legacy template file.
+// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified in class method before include.
 /**
  * General Options Page — Redesigned UI
  *
@@ -60,27 +62,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
         <div class="fme-content">
 
-            <!-- Rating banner — only rendered when the server decides it should show -->
-            <div class="fme-rating-banner<?php echo fme_should_show_rating_banner() ? '' : ' fme-banner-hidden'; ?>" id="fme-rating-banner">
-                <span class="fme-rating-heart">🩷</span>
-                <div class="fme-rating-text">
-                    <?php
-                    printf(
-                        /* translators: %1$s: plugin name, %2$s: star icons */
-                        esc_html__( 'Enjoying %1$s? Please leave a %2$s rating to support continued development. Thanks a bunch!', 'footnotes-made-easy' ),
-                        '<strong>Footnotes Made Easy</strong>',
-                        '<span class="fme-rating-stars">★★★★★</span>'
-                    );
-                    ?>
-                </div>
-                <a class="fme-rate-btn"
-                   href="https://wordpress.org/support/plugin/footnotes-made-easy/reviews/#new-post"
-                   target="_blank"
-                   rel="noopener noreferrer">
-                    <?php esc_html_e( 'Rate Plugin', 'footnotes-made-easy' ); ?>
-                </a>
-                <button type="button" class="fme-dismiss-btn" id="fme-dismiss-banner" title="<?php esc_attr_e( 'Dismiss', 'footnotes-made-easy' ); ?>">×</button>
-            </div>
 
             <!-- Saved notice — auto-dismisses after 4s via JS -->
             <?php if ( ! empty( $_POST['save_options'] ) && check_admin_referer( 'footnotes-nonce', 'footnotes_nonce' ) ) : ?>
@@ -527,12 +508,12 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <div class="fme-about-metric">
                         <p class="fme-about-metric-label"><?php esc_html_e( 'Posts with footnotes', 'footnotes-made-easy' ); ?></p>
                         <p class="fme-about-metric-value"><?php echo esc_html( $posts_with_footnotes ); ?></p>
-                        <p class="fme-about-metric-desc"><?php echo esc_html( sprintf( __( 'out of %d posts', 'footnotes-made-easy' ), $fme_total_posts ) ); ?></p>
+                        <p class="fme-about-metric-desc"><?php /* translators: %d: total number of posts */ echo esc_html( sprintf( __( 'out of %d posts', 'footnotes-made-easy' ), $fme_total_posts ) ); ?></p>
                     </div>
                     <div class="fme-about-metric">
                         <p class="fme-about-metric-label"><?php esc_html_e( 'Pages with footnotes', 'footnotes-made-easy' ); ?></p>
                         <p class="fme-about-metric-value"><?php echo esc_html( $pages_with_footnotes ); ?></p>
-                        <p class="fme-about-metric-desc"><?php echo esc_html( sprintf( __( 'out of %d pages', 'footnotes-made-easy' ), $fme_total_pages ) ); ?></p>
+                        <p class="fme-about-metric-desc"><?php /* translators: %d: total number of pages */ echo esc_html( sprintf( __( 'out of %d pages', 'footnotes-made-easy' ), $fme_total_pages ) ); ?></p>
                     </div>
                     <div class="fme-about-metric">
                         <p class="fme-about-metric-label"><?php esc_html_e( 'Total footnotes', 'footnotes-made-easy' ); ?></p>
@@ -592,7 +573,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                         : esc_html__( 'Footnotes Made Easy update available', 'footnotes-made-easy' ); ?>
                                 </p>
                                 <p class="fme-about-version-sub">
-                                    <?php echo esc_html( sprintf( __( 'You are running version %s', 'footnotes-made-easy' ), $fme_plugin_version ) ); ?>
+                                    <?php /* translators: %s: plugin version number */ echo esc_html( sprintf( __( 'You are running version %s', 'footnotes-made-easy' ), $fme_plugin_version ) ); ?>
                                 </p>
                             </div>
                             <?php if ( ! $fme_plugin_uptodate ) : ?>
@@ -619,7 +600,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                         : esc_html__( 'WordPress update available', 'footnotes-made-easy' ); ?>
                                 </p>
                                 <p class="fme-about-version-sub">
-                                    <?php echo esc_html( sprintf( __( 'You are running version %s', 'footnotes-made-easy' ), $fme_wp_version ) ); ?>
+                                    <?php /* translators: %s: WordPress version number */ echo esc_html( sprintf( __( 'You are running version %s', 'footnotes-made-easy' ), $fme_wp_version ) ); ?>
                                 </p>
                             </div>
                             <?php if ( ! $fme_wp_uptodate ) : ?>
@@ -683,7 +664,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                  data-title="<?php echo esc_attr( $fme_tut['title'] ); ?>"
                                  role="button"
                                  tabindex="0"
-                                 aria-label="<?php echo esc_attr( sprintf( __( 'Play: %s', 'footnotes-made-easy' ), $fme_tut['title'] ) ); ?>">
+                                 aria-label="<?php /* translators: %s: tutorial video title */ echo esc_attr( sprintf( __( 'Play: %s', 'footnotes-made-easy' ), $fme_tut['title'] ) ); ?>">
                                 <div class="fme-about-thumb">
                                     <img src="<?php echo esc_url( 'https://img.youtube.com/vi/' . $fme_tut['video_id'] . '/mqdefault.jpg' ); ?>"
                                          alt="<?php echo esc_attr( $fme_tut['title'] ); ?>"

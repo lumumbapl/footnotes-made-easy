@@ -3,7 +3,7 @@
  * Plugin Name:       Footnotes Made Easy
  * Plugin URI:        https://lumumbas-blog.co.ke/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           3.2.0-beta.5
+ * Version:           3.2.0-beta.6
  * Requires at least: 4.6
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
@@ -28,25 +28,45 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Enqueue plugin admin styles and scripts — only on our settings page
+ * Enqueue plugin admin styles and scripts — only on our plugin pages.
+ *
+ * We match on the $_GET['page'] query var — the only value that is
+ * guaranteed to be correct on every WP version and host, because it is
+ * the raw slug we registered with add_menu_page / add_submenu_page.
+ * Screen-ID and $hook string derivation has proven unreliable for
+ * custom top-level menus across environments.
  */
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 function fme_enqueue_styles( $hook ) {
-    if ( 'settings_page_footnotes-options-page' !== $hook ) {
+    $fme_pages = array(
+        'footnotes-made-easy',
+        'footnotes-settings',
+        'footnotes-help',
+        'footnotes-tools',
+    );
+
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- $_GET['page'] is a routing parameter, not form data.
+    $current_page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+
+    if ( ! in_array( $current_page, $fme_pages, true ) ) {
         return;
     }
+
+    $css_path = plugin_dir_path( __FILE__ ) . 'assets/css/admin-settings.css';
+    $js_path  = plugin_dir_path( __FILE__ ) . 'assets/js/admin-settings.js';
 
     wp_enqueue_style(
         'fme-admin-styles',
         plugin_dir_url( __FILE__ ) . 'assets/css/admin-settings.css',
         array(),
-        filemtime( plugin_dir_path( __FILE__ ) . 'assets/css/admin-settings.css' )
+        file_exists( $css_path ) ? filemtime( $css_path ) : '1.0'
     );
 
     wp_enqueue_script(
         'fme-admin-settings',
         plugin_dir_url( __FILE__ ) . 'assets/js/admin-settings.js',
         array(),
-        filemtime( plugin_dir_path( __FILE__ ) . 'assets/js/admin-settings.js' ),
+        file_exists( $js_path ) ? filemtime( $js_path ) : '1.0',
         true // load in footer
     );
 
@@ -73,100 +93,15 @@ function fme_enqueue_styles( $hook ) {
                 'sub'   => esc_html__( 'Plugin stats, version status, tutorials, and resources.', 'footnotes-made-easy' ),
             ),
         ),
-        'showBanner' => fme_should_show_rating_banner() ? '1' : '0',
-        'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-        'nonce'      => wp_create_nonce( 'fme_banner_nonce' ),
+        'postedTab'  => isset( $_POST['fme_active_tab'] ) ? sanitize_key( wp_unslash( $_POST['fme_active_tab'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Tab state only; nonce is verified in save_options().
     ) );
 }
 add_action( 'admin_enqueue_scripts', 'fme_enqueue_styles' );
 
-/* ── Rating-banner state helpers ──────────────────────────────────────────── */
 
-/**
- * Banner meta key used to track state per admin user.
- * Possible values:
- *   'install_date:<timestamp>'  — set on activation / version upgrade
- *   'snoozed:<timestamp>'       — set when the user clicks ✕; timestamp = show-again time
- *   'dismissed_forever'         — set when the user clicks Rate Plugin
- */
-define( 'FME_BANNER_META_KEY', 'fme_rating_banner' );
-
-/** Current plugin version string — used to detect upgrades. */
-define( 'FME_BANNER_VERSION', '3.2.0-beta.3' );
-
-/**
- * Set the install/upgrade date for the current admin user.
- * Called on plugin activation and on the first page-load after a version upgrade.
- */
-function fme_set_banner_install_date() {
-    $uid = get_current_user_id();
-    if ( ! $uid ) {
-        return;
-    }
-    update_user_meta( $uid, FME_BANNER_META_KEY, 'install_date:' . time() );
-}
-
-/**
- * On plugin activation seed the install date for the activating user.
- */
-function fme_activation_hook() {
-    fme_set_banner_install_date();
-    // Also store the version that triggered this seed so upgrades work.
-    update_user_meta( get_current_user_id(), 'fme_banner_seeded_version', FME_BANNER_VERSION );
-}
-register_activation_hook( __FILE__, 'fme_activation_hook' );
-
-/**
- * Determine whether the rating banner should be visible to the current user.
- *
- * @return bool
- */
-function fme_should_show_rating_banner() {
-    $uid = get_current_user_id();
-    if ( ! $uid || ! current_user_can( 'manage_options' ) ) {
-        return false;
-    }
-
-    $meta = get_user_meta( $uid, FME_BANNER_META_KEY, true );
-
-    // ── No meta at all: first time running this version; seed now and hide ──
-    if ( ! $meta ) {
-        fme_set_banner_install_date();
-        return false;
-    }
-
-    // ── Version upgrade: re-seed when the stored version differs ────────────
-    $seeded_version = get_user_meta( $uid, 'fme_banner_seeded_version', true );
-    if ( $seeded_version !== FME_BANNER_VERSION && 0 !== strpos( $meta, 'dismissed_forever' ) ) {
-        fme_set_banner_install_date();
-        update_user_meta( $uid, 'fme_banner_seeded_version', FME_BANNER_VERSION );
-        return false;
-    }
-
-    // ── Permanently dismissed ───────────────────────────────────────────────
-    if ( 'dismissed_forever' === $meta ) {
-        return false;
-    }
-
-    $now = time();
-
-    // ── Snoozed: hide until the snooze timestamp passes ─────────────────────
-    if ( 0 === strpos( $meta, 'snoozed:' ) ) {
-        $show_after = (int) substr( $meta, strlen( 'snoozed:' ) );
-        return ( $now >= $show_after );
-    }
-
-    // ── Install date: hide for the first 7 days ─────────────────────────────
-    if ( 0 === strpos( $meta, 'install_date:' ) ) {
-        $install_time = (int) substr( $meta, strlen( 'install_date:' ) );
-        return ( $now >= $install_time + 7 * DAY_IN_SECONDS );
-    }
-
-    return false;
-}
 
 // Instantiate the class
-$swas_wp_footnotes = new swas_wp_footnotes();
+$swas_wp_footnotes = new swas_wp_footnotes(); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 
 // Encapsulate in a class
 class swas_wp_footnotes {
@@ -245,6 +180,10 @@ class swas_wp_footnotes {
         // SECURITY FIX: Move options processing to admin_init hook instead of constructor
         // This ensures it only runs in admin context with proper authentication
         add_action( 'admin_init', array( $this, 'save_options' ) );
+        add_action( 'admin_post_fme_reset_settings',         array( $this, 'handle_reset_settings' ) );
+        add_action( 'admin_post_fme_save_preserve_settings', array( $this, 'handle_preserve_settings' ) );
+        add_action( 'admin_post_fme_export_settings',        array( $this, 'handle_export_settings' ) );
+        add_action( 'admin_post_fme_import_settings',        array( $this, 'handle_import_settings' ) );
 
         // Hook me up
         add_action( 'the_content', array( $this, 'process' ), $this->current_options[ 'priority' ] );
@@ -257,10 +196,8 @@ class swas_wp_footnotes {
 
         add_filter( 'admin_footer_text', array( $this, 'remove_footer_text' ) );
         add_filter( 'update_footer', array( $this, 'remove_footer_version' ), 11 );
+        add_action( 'admin_notices', array( $this, 'suppress_other_notices' ), 1 );
 
-        // Rating banner AJAX handlers
-        add_action( 'wp_ajax_fme_banner_rated',   array( $this, 'ajax_banner_rated' ) );
-        add_action( 'wp_ajax_fme_banner_snooze',  array( $this, 'ajax_banner_snooze' ) );
 
     }
 
@@ -348,7 +285,8 @@ class swas_wp_footnotes {
 			return false;
 		}
 
-		$current_path = isset( $_SERVER[ 'REQUEST_URI' ] ) ? parse_url( $_SERVER[ 'REQUEST_URI' ], PHP_URL_PATH ) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$current_path = isset( $_SERVER[ 'REQUEST_URI' ] ) ? parse_url( sanitize_url( wp_unslash( $_SERVER[ 'REQUEST_URI' ] ) ), PHP_URL_PATH ) : '';
 		$current_path = untrailingslashit( $current_path );
 		if ( empty( $current_path ) ) {
 			$current_path = '/';
@@ -526,7 +464,7 @@ class swas_wp_footnotes {
 			$id_num = ( $style === 'decimal' ) ? $value[ 'use_footnote' ] + $start_number : $this->convert_num( $value[ 'use_footnote' ] + $start_number, $style, count( $footnotes ) );
 			$id_href = ( ( $use_full_link ) ? get_permalink( $post->ID ) : '' ) . "#footnote_" . ( $value[ 'use_footnote' ] + $start_number ) . "_" . $post->ID;
 			$id_title = str_replace( '"', "&quot;", htmlentities( html_entity_decode( wp_strip_all_tags( $value[ 'text' ] ), ENT_QUOTES, 'UTF-8' ), ENT_QUOTES, 'UTF-8' ) );
-			$id_replace = $this->current_options[ 'pre_identifier' ] . '<a href="' . $id_href . '" id="' . $id_id . '" class="footnote-link footnote-identifier-link" title="' . $id_title . '">' . $this->current_options[ 'inner_pre_identifier' ] . $id_num . $this->current_options[ 'inner_post_identifier' ] . '</a>' . $this->current_options[ 'post_identifier' ];
+			$id_replace = esc_html( $this->current_options[ 'pre_identifier' ] ) . '<a href="' . esc_url( $id_href ) . '" id="' . esc_attr( $id_id ) . '" class="footnote-link footnote-identifier-link" title="' . esc_attr( $id_title ) . '">' . esc_html( $this->current_options[ 'inner_pre_identifier' ] ) . esc_html( (string) $id_num ) . esc_html( $this->current_options[ 'inner_post_identifier' ] ) . '</a>' . esc_html( $this->current_options[ 'post_identifier' ] );
 			if ( $this->current_options[ 'superscript' ] ) $id_replace = '<sup>' . $id_replace . '</sup>';
 			if ( $display ) $data = substr_replace( $data, $id_replace, strpos( $data,$value[ 0 ] ), strlen( $value[ 0 ] ) );
 			else $data = substr_replace( $data, '', strpos( $data, $value[ 0 ] ), strlen( $value[ 0 ] ) );
@@ -544,16 +482,16 @@ class swas_wp_footnotes {
 		foreach ( $footnotes as $key => $value ) {
 			$footnotes_markup = $footnotes_markup . '<li id="footnote_' . ( $key + $start_number ) . '_' . $post->ID . '" class="footnote"';
 			if ( 'symbol' === $style ) {
-				$footnotes_markup = $footnotes_markup . ' value="' . $value[ 'symbol' ] . '"';
+				$footnotes_markup = $footnotes_markup . ' value="' . esc_attr( $value[ 'symbol' ] ) . '"';
 			}
 			$footnotes_markup = $footnotes_markup . '>';
 			if ( 'symbol' === $style ) {
-				$footnotes_markup = $footnotes_markup . $value[ 'symbol' ] . ' ';
+				$footnotes_markup = $footnotes_markup . esc_html( $value[ 'symbol' ] ) . ' ';
 			}
-			$footnotes_markup = $footnotes_markup . $value[ 'text' ];
+			$footnotes_markup = $footnotes_markup . wp_kses_post( $value[ 'text' ] );
 			if ( ! is_feed() ) {
 				foreach ( $value[ 'identifiers' ] as $identifier ) {
-					$footnotes_markup = $footnotes_markup . '<span class="footnote-back-link-wrapper">' . $this->current_options[ 'pre_backlink' ] . '<a href="' . ( ( $use_full_link ) ? get_permalink( $post->ID ) : '' ) . '#identifier_' . ( $identifier + 1 ) . '_' . $post->ID . '" class="footnote-link footnote-back-link">' . $this->current_options[ 'backlink' ] . '</a>' . $this->current_options[ 'post_backlink' ] . '</span>';
+					$footnotes_markup = $footnotes_markup . '<span class="footnote-back-link-wrapper">' . esc_html( $this->current_options[ 'pre_backlink' ] ) . '<a href="' . esc_url( ( ( $use_full_link ) ? get_permalink( $post->ID ) : '' ) . '#identifier_' . ( $identifier + 1 ) . '_' . $post->ID ) . '" class="footnote-link footnote-back-link">' . esc_html( $this->current_options[ 'backlink' ] ) . '</a>' . esc_html( $this->current_options[ 'post_backlink' ] ) . '</span>';
 				}
 			}
 			$footnotes_markup = $footnotes_markup . '</li>';
@@ -604,7 +542,7 @@ class swas_wp_footnotes {
 		if ( empty( $this_plugin ) ) { $this_plugin = plugin_basename( __FILE__ ); }
 
 		if ( $file === $this_plugin ) {
-			$settings_link = '<a href="options-general.php?page=footnotes-options-page" style="font-weight: 700; color: #534AB7;">' . __( 'Settings', 'footnotes-made-easy' ) . '</a>';
+			$settings_link = '<a href="admin.php?page=footnotes-made-easy" style="font-weight: 700; color: #534AB7;">' . __( 'Settings', 'footnotes-made-easy' ) . '</a>';
 			array_unshift( $links, $settings_link );
 		}
 		
@@ -634,7 +572,7 @@ class swas_wp_footnotes {
 		}
 		$this->current_options = $new_setting;
 		unset( $new_setting );
-		include ( dirname(__FILE__) . '/includes/options.php' );
+		include( dirname( __FILE__ ) . '/includes/settings.php' );
 	}
 
 	/**
@@ -665,10 +603,102 @@ class swas_wp_footnotes {
 
 		global $footnotes_hook;
 
-		$footnotes_hook = add_options_page( __( 'Footnotes Made Easy', 'footnotes-made-easy' ), __( 'Footnotes Made Easy', 'footnotes-made-easy' ), 'manage_options', 'footnotes-options-page', array( $this, 'footnotes_options_page' ) );
+		// Standalone top-level menu item, positioned after Posts (Posts = 5)
+		$footnotes_hook = add_menu_page(
+			__( 'Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Footnotes', 'footnotes-made-easy' ),
+			'manage_options',
+			'footnotes-made-easy',
+			array( $this, 'footnotes_dashboard_page' ),
+			'dashicons-editor-ol',
+			6 // just after Posts (5) and before Media (10)
+		);
+
+		// Dashboard submenu (mirrors the top-level entry)
+		add_submenu_page(
+			'footnotes-made-easy',
+			__( 'Dashboard — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Dashboard', 'footnotes-made-easy' ),
+			'manage_options',
+			'footnotes-made-easy',
+			array( $this, 'footnotes_dashboard_page' )
+		);
+
+		// Settings submenu
+		add_submenu_page(
+			'footnotes-made-easy',
+			__( 'Footnotes Settings — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Footnotes Settings', 'footnotes-made-easy' ),
+			'manage_options',
+			'footnotes-settings',
+			array( $this, 'footnotes_options_page' )
+		);
 
 		add_action( 'load-' . $footnotes_hook, array( $this, 'remove_help_tabs' ) );
 
+		// Tools and Help register at priority 30 so Pro (priority 20) inserts Library between Settings and Tools
+		add_action( 'admin_menu', array( $this, 'add_secondary_menu_pages' ), 30 );
+	}
+
+	function add_secondary_menu_pages() {
+		// Tools submenu
+		add_submenu_page(
+			'footnotes-made-easy',
+			__( 'Tools — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Tools', 'footnotes-made-easy' ),
+			'manage_options',
+			'footnotes-tools',
+			array( $this, 'footnotes_tools_page' )
+		);
+
+		// Help submenu
+		add_submenu_page(
+			'footnotes-made-easy',
+			__( 'Help — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Help', 'footnotes-made-easy' ),
+			'manage_options',
+			'footnotes-help',
+			array( $this, 'footnotes_help_page' )
+		);
+
+	}
+
+	/**
+	* Dashboard Page
+	*
+	* Renders the Dashboard subpage (About tab content)
+	*
+	* @since 3.2.0
+	*/
+	function footnotes_dashboard_page() {
+		$this->current_options = get_option( 'swas_footnote_options' );
+		foreach ( $this->default_options as $key => $value ) {
+			if ( ! array_key_exists( $key, $this->current_options ) ) {
+				$this->current_options[ $key ] = $value;
+			}
+		}
+		$new_setting = array();
+		foreach ( $this->current_options as $key => $setting ) {
+			$new_setting[ $key ] = htmlentities( $setting );
+		}
+		$this->current_options = $new_setting;
+		unset( $new_setting );
+		include( dirname( __FILE__ ) . '/includes/dashboard.php' );
+	}
+
+	/**
+	* Help Page
+	*
+	* Renders the Help subpage
+	*
+	* @since 3.2.0
+	*/
+	function footnotes_help_page() {
+		include( dirname( __FILE__ ) . '/includes/help.php' );
+	}
+
+	function footnotes_tools_page() {
+		include( dirname( __FILE__ ) . '/includes/tools.php' );
 	}
 
 	/**
@@ -680,14 +710,11 @@ class swas_wp_footnotes {
 	*/
 
 	function insert_styles(){
-		?>
-		<style type="text/css">
-			<?php if ( 'symbol' !== $this->current_options[ 'list_style_type' ] ): ?>
-			ol.footnotes>li {list-style-type:<?php echo esc_attr( $this->current_options[ 'list_style_type' ] ); ?>;}
-			<?php endif; ?>
-			<?php echo "ol.footnotes { color:#666666; }\nol.footnotes li { font-size:80%; }\n"; ?>
-		</style>
-		<?php
+		$css = "ol.footnotes { color:#666666; }\nol.footnotes li { font-size:80%; }\n";
+		if ( 'symbol' !== $this->current_options[ 'list_style_type' ] ) {
+			$css .= 'ol.footnotes>li {list-style-type:' . esc_attr( $this->current_options[ 'list_style_type' ] ) . ';}';
+		}
+		wp_add_inline_style( 'wp-block-library', $css );
 	}
 
 	/**
@@ -808,6 +835,163 @@ class swas_wp_footnotes {
 	}
 
 	/**
+	 * Handle export settings.
+	 * Outputs a JSON file download containing all plugin settings.
+	 * Pro settings are included if Pro is active and license is valid.
+	 */
+	function handle_export_settings() {
+		check_admin_referer( 'fme_export_settings_nonce', 'fme_export_settings_nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'footnotes-made-easy' ) );
+		}
+
+		$data = array(
+			'plugin'   => 'footnotes-made-easy',
+			'version'  => self::OPTIONS_VERSION,
+			'exported' => gmdate( 'Y-m-d H:i:s' ),
+			'settings' => array(
+				'free' => get_option( 'swas_footnote_options', array() ),
+			),
+		);
+
+		// Include Pro settings if Pro is active and licensed
+		if ( defined( 'FME_PRO_VERSION' ) && class_exists( 'FME_Pro_License' ) && FME_Pro_License::is_active() ) {
+			$data['settings']['pro'] = array(
+				'fme_pro_citation_style'            => get_option( 'fme_pro_citation_style', 'apa' ),
+				'fme_preserve_settings_on_uninstall' => get_option( 'fme_preserve_settings_on_uninstall', '0' ),
+			);
+		}
+
+		$filename = 'footnotes-made-easy-settings-' . gmdate( 'Y-m-d' ) . '.json';
+		$json     = wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
+
+		header( 'Content-Type: application/json; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'Content-Length: ' . strlen( $json ) );
+		header( 'Cache-Control: no-cache, no-store, must-revalidate' );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		echo $json; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		exit;
+	}
+
+	/**
+	 * Handle import settings.
+	 * Reads a JSON file and writes known option keys to the database.
+	 */
+	function handle_import_settings() {
+		check_admin_referer( 'fme_import_settings_nonce', 'fme_import_settings_nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'footnotes-made-easy' ) );
+		}
+
+		$redirect_base = admin_url( 'admin.php?page=footnotes-tools' );
+
+		// Check file was uploaded
+		if ( empty( $_FILES['fme_import_file']['tmp_name'] ) ) {
+			wp_safe_redirect( $redirect_base . '&import=error&import_message=' . urlencode( __( 'No file uploaded.', 'footnotes-made-easy' ) ) );
+			exit;
+		}
+
+		$file = $_FILES['fme_import_file'];
+
+		// Validate file type
+		$ext = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );
+		if ( $ext !== 'json' ) {
+			wp_safe_redirect( $redirect_base . '&import=error&import_message=' . urlencode( __( 'Invalid file type. Please upload a .json file.', 'footnotes-made-easy' ) ) );
+			exit;
+		}
+
+		// Read and decode
+		$raw  = file_get_contents( $file['tmp_name'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		$data = json_decode( $raw, true );
+
+		// Validate structure
+		if ( ! $data || ( $data['plugin'] ?? '' ) !== 'footnotes-made-easy' ) {
+			wp_safe_redirect( $redirect_base . '&import=error&import_message=' . urlencode( __( 'Invalid settings file. This file was not exported from Footnotes Made Easy.', 'footnotes-made-easy' ) ) );
+			exit;
+		}
+
+		$imported = 0;
+
+		// Import free settings — only write known keys
+		if ( ! empty( $data['settings']['free'] ) && is_array( $data['settings']['free'] ) ) {
+			$allowed_keys = array_keys( $this->default_options );
+			$current      = get_option( 'swas_footnote_options', array() );
+			foreach ( $allowed_keys as $key ) {
+				if ( isset( $data['settings']['free'][ $key ] ) ) {
+					$current[ $key ] = $data['settings']['free'][ $key ];
+				}
+			}
+			update_option( 'swas_footnote_options', $current );
+			$imported++;
+		}
+
+		// Import Pro settings — only if Pro is active and licensed
+		if ( ! empty( $data['settings']['pro'] ) ) {
+			if (
+				defined( 'FME_PRO_VERSION' ) &&
+				class_exists( 'FME_Pro_License' ) &&
+				FME_Pro_License::is_active()
+			) {
+				$pro         = $data['settings']['pro'];
+				$allowed_pro = array( 'fme_pro_citation_style', 'fme_preserve_settings_on_uninstall' );
+				foreach ( $allowed_pro as $key ) {
+					if ( isset( $pro[ $key ] ) ) {
+						update_option( $key, sanitize_text_field( $pro[ $key ] ) );
+					}
+				}
+				$imported++;
+			} else {
+				// Pro settings present in file but Pro not active — warn the user
+				wp_safe_redirect( $redirect_base . '&import=partial&import_message=' . urlencode( __( 'Free settings imported successfully. The file also contains Pro settings which were skipped — activate Footnotes Made Easy Pro to import them.', 'footnotes-made-easy' ) ) );
+				exit;
+			}
+		}
+
+		if ( $imported === 0 ) {
+			wp_safe_redirect( $redirect_base . '&import=error&import_message=' . urlencode( __( 'No settings were found in the file.', 'footnotes-made-easy' ) ) );
+			exit;
+		}
+
+		wp_safe_redirect( $redirect_base . '&import=success' );
+		exit;
+	}
+
+	/**
+	 * Handle reset settings form submission.
+	 * Replaces all options with plugin defaults.
+	 */
+	function handle_reset_settings() {
+		check_admin_referer( 'fme_reset_settings_nonce', 'fme_reset_settings_nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'footnotes-made-easy' ) );
+		}
+		update_option( 'swas_footnote_options', $this->default_options );
+		// Also reset Pro citation style if Pro is active
+		if ( defined( 'FME_PRO_VERSION' ) ) {
+			delete_option( 'fme_pro_citation_style' );
+		}
+		wp_safe_redirect( admin_url( 'admin.php?page=footnotes-tools&reset=1' ) );
+		exit;
+	}
+
+	/**
+	 * Handle preserve settings toggle form submission.
+	 */
+	function handle_preserve_settings() {
+		check_admin_referer( 'fme_preserve_settings_nonce', 'fme_preserve_settings_nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'footnotes-made-easy' ) );
+		}
+		$preserve = isset( $_POST['fme_preserve_settings'] ) ? '1' : '0';
+		update_option( 'fme_preserve_settings_on_uninstall', $preserve );
+		wp_safe_redirect( admin_url( 'admin.php?page=footnotes-tools&preserve_saved=1' ) );
+		exit;
+	}
+
+	/**
 	* Remove Footer Text
 	*
 	* Removes the default WordPress admin footer text on the plugin's settings page
@@ -819,8 +1003,7 @@ class swas_wp_footnotes {
 	*/
 
 	function remove_footer_text( $footer_text ) {
-		$screen = get_current_screen();
-		if ( $screen && $screen->id === 'settings_page_footnotes-options-page' ) {
+		if ( $this->is_our_page() ) {
 			return '';
 		}
 		return $footer_text;
@@ -838,38 +1021,44 @@ class swas_wp_footnotes {
 	*/
 
 	function remove_footer_version( $footer_version ) {
-		$screen = get_current_screen();
-		if ( $screen && $screen->id === 'settings_page_footnotes-options-page' ) {
+		if ( $this->is_our_page() ) {
 			return '';
 		}
 		return $footer_version;
 	}
 
-    /* ── Rating-banner AJAX handlers ──────────────────────────────────────── */
+	/**
+	 * Suppress admin notices from other plugins on our pages.
+	 * Fires on admin_notices before other plugins output their notices.
+	 */
+	function suppress_other_notices() {
+		if ( ! $this->is_our_page() ) {
+			return;
+		}
+		remove_all_actions( 'admin_notices' );
+		remove_all_actions( 'network_admin_notices' );
+		remove_all_actions( 'all_admin_notices' );
+	}
 
-    /**
-     * AJAX: user clicked "Rate Plugin" — dismiss the banner forever.
-     */
-    function ajax_banner_rated() {
-        check_ajax_referer( 'fme_banner_nonce', 'nonce' );
-        if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( 'Unauthorized', 403 );
-        }
-        update_user_meta( get_current_user_id(), FME_BANNER_META_KEY, 'dismissed_forever' );
-        wp_send_json_success();
-    }
-
-    /**
-     * AJAX: user clicked ✕ Dismiss — snooze the banner for 7 days.
-     */
-    function ajax_banner_snooze() {
-        check_ajax_referer( 'fme_banner_nonce', 'nonce' );
-        if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( 'Unauthorized', 403 );
-        }
-        $show_after = time() + 7 * DAY_IN_SECONDS;
-        update_user_meta( get_current_user_id(), FME_BANNER_META_KEY, 'snoozed:' . $show_after );
-        wp_send_json_success();
-    }
+	/**
+	 * Returns true when the current request is one of our admin pages.
+	 * Uses $_GET['page'] which is always reliable on admin pages.
+	 */
+	private function is_our_page() {
+		if ( ! is_admin() ) {
+			return false;
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$page = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : '';
+		$our_pages = array(
+			'footnotes-made-easy',
+			'footnotes-settings',
+			'footnotes-help',
+			'footnotes-tools',
+			'fme-pro-library',
+			'fme-pro-license',
+		);
+		return in_array( $page, $our_pages, true );
+	}
 
 }
