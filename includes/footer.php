@@ -5,7 +5,6 @@
  * @package footnotes-made-easy
  * @since   3.2.0
  */
-// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template file included from within class method scope.
 defined( 'ABSPATH' ) || exit;
 ?>
 <div class="fme-page-footer">
@@ -13,17 +12,21 @@ defined( 'ABSPATH' ) || exit;
     <div class="fme-page-footer__brand">
         <span><?php esc_html_e( 'Made with', 'footnotes-made-easy' ); ?></span>
         <svg class="fme-page-footer__heart" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 14s-6-3.84-6-8a4 4 0 0 1 6-3.46A4 4 0 0 1 14 6c0 4.16-6 8-6 8z"/></svg>
-        <span><?php esc_html_e( 'by the WordPress community', 'footnotes-made-easy' ); ?></span>
+        <span><?php esc_html_e( 'by Altvise, LLC', 'footnotes-made-easy' ); ?></span>
     </div>
 
     <nav class="fme-page-footer__links">
-        <a href="https://wordpress.org/plugins/footnotes-made-easy/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Plugin page', 'footnotes-made-easy' ); ?></a>
+        <a href="#" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Our blog', 'footnotes-made-easy' ); ?></a>
         <span class="fme-page-footer__sep">/</span>
-        <a href="https://wordpress.org/support/plugin/footnotes-made-easy/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Support', 'footnotes-made-easy' ); ?></a>
+        <a href="#" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Support', 'footnotes-made-easy' ); ?></a>
         <span class="fme-page-footer__sep">/</span>
-        <a href="https://wordpress.org/support/plugin/footnotes-made-easy/reviews/#new-post" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Leave a review', 'footnotes-made-easy' ); ?></a>
+        <a href="#" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Docs', 'footnotes-made-easy' ); ?></a>
         <span class="fme-page-footer__sep">/</span>
-        <a href="https://github.com/lumumbapl/footnotes-made-easy" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'GitHub', 'footnotes-made-easy' ); ?></a>
+        <a href="#" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Roadmap', 'footnotes-made-easy' ); ?></a>
+        <span class="fme-page-footer__sep">/</span>
+        <a href="#" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Terms of Service', 'footnotes-made-easy' ); ?></a>
+        <span class="fme-page-footer__sep">/</span>
+        <a href="#" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Privacy Policy', 'footnotes-made-easy' ); ?></a>
     </nav>
 
     <div class="fme-page-footer__social">

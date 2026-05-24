@@ -46,11 +46,13 @@
 
             // Disable Save button when on a locked Citations tab
             if ( submitBtn ) {
-                var isLockedCitations = id === 'citations' && !! document.querySelector('#fme-panel-citations .fme-locked-wrap');
+                var isLockedCitations = id === 'citations' && !! document.querySelector('#fme-panel-citations .fme-fullpage-lock');
                 submitBtn.disabled = isLockedCitations;
-                submitBtn.style.opacity    = isLockedCitations ? '0.4' : '';
-                submitBtn.style.cursor     = isLockedCitations ? 'not-allowed' : '';
+                submitBtn.style.opacity       = isLockedCitations ? '0.4' : '';
+                submitBtn.style.cursor        = isLockedCitations ? 'not-allowed' : '';
                 submitBtn.style.pointerEvents = isLockedCitations ? 'none' : '';
+                // Toggle sidebar visibility
+                document.body.classList.toggle( 'fme-citations-locked', isLockedCitations );
             }
 
             if ( history.replaceState ) {

@@ -8,34 +8,63 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
+
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$fme_current_page = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : '';
+
+$fme_pro_active = defined( 'FME_PRO_VERSION' )
+    && class_exists( 'FME_Pro_License' )
+    && FME_Pro_License::is_active();
+
+// Citations tab URL for the settings tip link
+$fme_citations_url = admin_url( 'admin.php?page=footnotes-settings#citations' );
+
+// Contextual tips per page — HTML allowed for bold and links
+$fme_tips = [
+    'footnotes-settings'  => sprintf(
+        /* translators: %s = link to Citations tab */
+        __( 'You can use the <a href="%s"><strong>Citations</strong></a> tab to format footnotes in APA, MLA, or Chicago style — automatically, site-wide.', 'footnotes-made-easy' ),
+        esc_url( $fme_citations_url )
+    ),
+    'fme-pro-library'     => __( 'You can save frequently cited sources once, then insert them into any post in seconds from the <strong>Footnotes Pro panel</strong> on the Gutenberg editor.', 'footnotes-made-easy' ),
+    'footnotes-tools'     => sprintf(
+        __( 'You can export your <strong>Footnotes Made Easy</strong> settings and reuse the same settings on another site in just one click.', 'footnotes-made-easy' )
+    ),
+    'footnotes-made-easy' => __( 'You can manage, reorder, and format all footnotes without leaving the editor — using the <strong>Footnotes Pro panel</strong> in Gutenberg.', 'footnotes-made-easy' ),
+    'fme-pro-license'     => __( 'Your license unlocks Citations, Library, and the <strong>Footnotes Pro panel</strong> across your entire site.', 'footnotes-made-easy' ),
+    'footnotes-help'      => __( 'Wrap any text in <strong>(( ))</strong> to create a footnote. Use the <strong>Footnotes Pro panel</strong> on the editor to add citations or insert from your library.', 'footnotes-made-easy' ),
+];
+
+$fme_tip = $fme_tips[ $fme_current_page ]
+    ?? __( 'Wrap any text in <strong>(( ))</strong> to create a footnote anywhere in your posts.', 'footnotes-made-easy' );
+
+$fme_allowed_tip_html = [
+    'a'      => [ 'href' => [], 'target' => [], 'rel' => [] ],
+    'strong' => [],
+];
 ?>
 <aside class="fme-settings-sidebar">
 
-    <!-- Help & resources -->
-    <div class="fme-card">
-        <div class="fme-card-head">
-            <span class="dashicons dashicons-sos"></span>
-            <h3><?php esc_html_e( 'Help &amp; resources', 'footnotes-made-easy' ); ?></h3>
-        </div>
-        <div class="fme-quicklinks">
-            <a href="https://wordpress.org/plugins/footnotes-made-easy/" target="_blank" rel="noopener noreferrer" class="fme-quicklink-row">
-                <span><?php esc_html_e( 'Documentation', 'footnotes-made-easy' ); ?></span>
-                <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M7 3.5l2.5 2.5L7 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
-            <a href="https://wordpress.org/support/plugin/footnotes-made-easy/" target="_blank" rel="noopener noreferrer" class="fme-quicklink-row">
-                <span><?php esc_html_e( 'Support forum', 'footnotes-made-easy' ); ?></span>
-                <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M7 3.5l2.5 2.5L7 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
-            <a href="https://github.com/lumumbapl/footnotes-made-easy/issues" target="_blank" rel="noopener noreferrer" class="fme-quicklink-row">
-                <span><?php esc_html_e( 'Report a bug', 'footnotes-made-easy' ); ?></span>
-                <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M7 3.5l2.5 2.5L7 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=footnotes-help' ) ); ?>" class="fme-quicklink-row">
-                <span><?php esc_html_e( 'Help page', 'footnotes-made-easy' ); ?></span>
-                <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M7 3.5l2.5 2.5L7 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
-        </div>
+    <?php if ( $fme_pro_active ) : ?>
+    <!-- Pro tip card -->
+    <div class="fme-tip-card">
+        <div class="fme-tip-card__icon" aria-hidden="true">💡</div>
+        <h3 class="fme-tip-card__heading"><?php esc_html_e( 'Did you know?', 'footnotes-made-easy' ); ?></h3>
+        <p class="fme-tip-card__text"><?php echo wp_kses( $fme_tip, $fme_allowed_tip_html ); ?></p>
     </div>
+
+    <?php else : ?>
+    <!-- Upgrade nudge -->
+    <div class="fme-upgrade-card">
+        <div class="fme-upgrade-card__icon" aria-hidden="true">✦</div>
+        <h3 class="fme-upgrade-card__heading"><?php esc_html_e( 'Upgrade to Pro', 'footnotes-made-easy' ); ?></h3>
+        <p class="fme-upgrade-card__text"><?php esc_html_e( 'Unlock Citations, a reusable Footnote Library, and a Gutenberg sidebar panel — all in one upgrade.', 'footnotes-made-easy' ); ?></p>
+        <a href="https://lumumbas-blog.co.ke/footnotes-made-easy-pro/" target="_blank" rel="noopener noreferrer" class="fme-upgrade-card__btn">
+            <?php esc_html_e( 'Learn more', 'footnotes-made-easy' ); ?>
+            <svg viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7 3.5l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+    </div>
+    <?php endif; ?>
 
     <!-- Review nudge -->
     <div class="fme-review-card">

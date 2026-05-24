@@ -3,7 +3,7 @@
  * Plugin Name:       Footnotes Made Easy
  * Plugin URI:        https://lumumbas-blog.co.ke/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           3.2.0-beta.6
+ * Version:           3.2.0-beta.7
  * Requires at least: 4.6
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba

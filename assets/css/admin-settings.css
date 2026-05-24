@@ -1092,3 +1092,99 @@
 .fme-modal__confirm:hover {
     background: #931f20;
 }
+
+/* ── Upgrade nudge card ───────────────────────────────── */
+.fme-upgrade-card {
+    background: linear-gradient( 135deg, #534AB7 0%, #6d5fd4 100% );
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    text-align: center;
+    color: #fff;
+}
+
+.fme-upgrade-card__icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+    display: block;
+    opacity: 0.9;
+}
+
+.fme-upgrade-card__heading {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 8px;
+}
+
+.fme-upgrade-card__text {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.6;
+    margin: 0 0 16px;
+}
+
+.fme-upgrade-card__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    color: #534AB7;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.fme-upgrade-card__btn:hover {
+    background: #f0eeff;
+    color: #433aa0;
+}
+
+.fme-upgrade-card__btn svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+}
+
+/* ── Pro tip card ─────────────────────────────────────── */
+.fme-tip-card {
+    background: #f0eeff;
+    border: 1px solid #c7d2fe;
+    border-left: 4px solid #534AB7;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+}
+
+.fme-tip-card__icon {
+    font-size: 18px;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.fme-tip-card__heading {
+    font-size: 12px;
+    font-weight: 700;
+    color: #534AB7;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 8px;
+}
+
+.fme-tip-card__text {
+    font-size: 12px;
+    color: #3730a3;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ── Hide sidebar when Citations tab is locked ────────── */
+body.fme-citations-locked .fme-settings-sidebar {
+    display: none !important;
+}
+body.fme-citations-locked .fme-settings-main {
+    max-width: 720px;
+}
