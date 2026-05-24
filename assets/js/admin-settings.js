@@ -11,6 +11,14 @@
 (function () {
     'use strict';
 
+    /* ── Auto-dismiss notices (runs on all plugin pages) ─── */
+    document.querySelectorAll( '.fme-notice-autodismiss' ).forEach( function( notice ) {
+        function dismissNotice() { notice.classList.add( 'fme-notice-hiding' ); }
+        setTimeout( dismissNotice, 5000 );
+        var closeBtn = notice.querySelector( '.fme-notice-close' );
+        if ( closeBtn ) { closeBtn.addEventListener( 'click', dismissNotice ); }
+    } );
+
     if ( typeof fmeSettings === 'undefined' ) { return; }
 
     /* ── Tab switching (Settings page) ─────────────────────── */
@@ -103,15 +111,6 @@
         document.addEventListener( 'keydown', function (e) {
             if ( e.key === 'Escape' && modal && modal.style.display === 'flex' ) { closeModal(); }
         } );
-    }
-
-    /* ── Auto-dismiss saved notice ──────────────────────────── */
-    var notice = document.getElementById('fme-saved-notice');
-    if ( notice ) {
-        function dismissNotice() { notice.classList.add('fme-notice-hiding'); }
-        setTimeout( dismissNotice, 5000 );
-        var noticeClose = notice.querySelector('.fme-notice-close');
-        if ( noticeClose ) { noticeClose.addEventListener( 'click', dismissNotice ); }
     }
 
     /* ── Reset settings modal (Tools page) ─────────────── */
