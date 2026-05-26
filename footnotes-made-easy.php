@@ -98,6 +98,116 @@ function fme_enqueue_styles( $hook ) {
 }
 add_action( 'admin_enqueue_scripts', 'fme_enqueue_styles' );
 
+/**
+ * Enqueue the deactivation survey on the plugins page.
+ */
+function fme_enqueue_deactivation_survey( string $hook ): void {
+    if ( $hook !== 'plugins.php' ) return;
+
+    $plugin_data    = get_plugin_data( __FILE__, false, false );
+    $plugin_version = $plugin_data['Version'] ?? '1.0';
+    $css_ver        = filemtime( plugin_dir_path( __FILE__ ) . 'assets/css/admin-settings.css' ) ?: $plugin_version;
+    $js_ver         = filemtime( plugin_dir_path( __FILE__ ) . 'assets/js/deactivation-survey.js' ) ?: $plugin_version;
+
+    wp_enqueue_style(
+        'fme-admin-settings',
+        plugin_dir_url( __FILE__ ) . 'assets/css/admin-settings.css',
+        [],
+        $css_ver
+    );
+
+    wp_enqueue_script(
+        'fme-deactivation-survey',
+        plugin_dir_url( __FILE__ ) . 'assets/js/deactivation-survey.js',
+        [],
+        $js_ver,
+        true
+    );
+
+    wp_localize_script( 'fme-deactivation-survey', 'fmeDeactivation', [
+        'pluginSlug'    => 'footnotes-made-easy',
+        'pluginFile'    => 'footnotes-made-easy/footnotes-made-easy.php',
+        'pluginVersion' => $plugin_version,
+        'wpVersion'     => get_bloginfo( 'version' ),
+        'phpVersion'    => PHP_VERSION,
+        'endpoint'      => 'https://analytics.checkoutpress.co/wp-json/altvise/v1/deactivation-feedback',
+    ] );
+}
+add_action( 'admin_enqueue_scripts', 'fme_enqueue_deactivation_survey' );
+
+/**
+ * Welcome modal — shown once after fresh install or update from an older version.
+ */
+function fme_check_welcome_modal(): void {
+    $plugin_data    = get_plugin_data( __FILE__, false, false );
+    $current_ver    = $plugin_data['Version'] ?? '';
+    $stored_ver     = get_option( 'fme_welcome_shown_version', '' );
+
+    // Show if never shown, or if version has changed
+    if ( $stored_ver !== $current_ver ) {
+        set_transient( 'fme_show_welcome', $current_ver, DAY_IN_SECONDS );
+    }
+}
+add_action( 'admin_init', 'fme_check_welcome_modal' );
+
+function fme_enqueue_welcome_modal( string $hook ): void {
+    // Only show on our own plugin pages
+    $fme_pages = [
+        'toplevel_page_footnotes-made-easy',
+        'footnotes_page_footnotes-settings',
+        'footnotes_page_footnotes-tools',
+        'footnotes_page_footnotes-help',
+        'footnotes_page_fme-pro-library',
+        'footnotes_page_fme-pro-license',
+    ];
+    if ( ! in_array( $hook, $fme_pages, true ) ) return;
+
+    $show_version = get_transient( 'fme_show_welcome' );
+    if ( ! $show_version ) return;
+
+    $stored_ver  = get_option( 'fme_welcome_shown_version', '' );
+    $is_update   = ! empty( $stored_ver );
+
+    $js_path = plugin_dir_path( __FILE__ ) . 'assets/js/welcome-modal.js';
+    wp_enqueue_script(
+        'fme-welcome-modal',
+        plugin_dir_url( __FILE__ ) . 'assets/js/welcome-modal.js',
+        [],
+        file_exists( $js_path ) ? filemtime( $js_path ) : '1.0',
+        true
+    );
+
+    wp_localize_script( 'fme-welcome-modal', 'fmeWelcome', [
+        'show'     => true,
+        'version'  => $show_version,
+        'isUpdate' => $is_update,
+        'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
+        'nonce'    => wp_create_nonce( 'fme_welcome_nonce' ),
+    ] );
+}
+add_action( 'admin_enqueue_scripts', 'fme_enqueue_welcome_modal' );
+
+// Inject blur styles in <head> so page is blurred before content renders
+add_action( 'admin_head', function (): void {
+    if ( ! get_transient( 'fme_show_welcome' ) ) return;
+    // Only on our pages
+    $page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+    $our_pages = [ 'footnotes-made-easy', 'footnotes-settings', 'footnotes-tools', 'footnotes-help', 'fme-pro-library', 'fme-pro-license' ];
+    if ( ! in_array( $page, $our_pages, true ) ) return;
+    echo '<style id="fme-welcome-preblur">#wpcontent,#wpbody-content,#adminmenu{filter:blur(4px);pointer-events:none;user-select:none;}</style>';
+} );
+
+// AJAX handler — mark welcome as shown
+add_action( 'wp_ajax_fme_dismiss_welcome', function (): void {
+    check_ajax_referer( 'fme_welcome_nonce', 'nonce' );
+    $version = get_transient( 'fme_show_welcome' );
+    if ( $version ) {
+        update_option( 'fme_welcome_shown_version', $version );
+        delete_transient( 'fme_show_welcome' );
+    }
+    wp_send_json_success();
+} );
+
 
 
 // Instantiate the class
@@ -694,7 +804,7 @@ class swas_wp_footnotes {
 		// Dashboard submenu (mirrors the top-level entry)
 		add_submenu_page(
 			'footnotes-made-easy',
-			__( 'Dashboard — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Dashboard', 'footnotes-made-easy' ),
 			__( 'Dashboard', 'footnotes-made-easy' ),
 			'manage_options',
 			'footnotes-made-easy',
@@ -704,7 +814,7 @@ class swas_wp_footnotes {
 		// Settings submenu
 		add_submenu_page(
 			'footnotes-made-easy',
-			__( 'Footnotes Settings — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Settings', 'footnotes-made-easy' ),
 			__( 'Footnotes Settings', 'footnotes-made-easy' ),
 			'manage_options',
 			'footnotes-settings',
@@ -736,7 +846,7 @@ class swas_wp_footnotes {
 
 		add_submenu_page(
 			'footnotes-made-easy',
-			__( 'Dashboard — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Dashboard', 'footnotes-made-easy' ),
 			__( 'Dashboard', 'footnotes-made-easy' ),
 			'manage_network_options',
 			'footnotes-made-easy',
@@ -745,7 +855,7 @@ class swas_wp_footnotes {
 
 		add_submenu_page(
 			'footnotes-made-easy',
-			__( 'Footnotes Settings — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Settings', 'footnotes-made-easy' ),
 			__( 'Footnotes Settings', 'footnotes-made-easy' ),
 			'manage_network_options',
 			'footnotes-settings',
@@ -765,7 +875,7 @@ class swas_wp_footnotes {
 
 		add_submenu_page(
 			'footnotes-made-easy',
-			__( 'Tools — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Tools', 'footnotes-made-easy' ),
 			__( 'Tools', 'footnotes-made-easy' ),
 			'manage_network_options',
 			'footnotes-tools',
@@ -774,7 +884,7 @@ class swas_wp_footnotes {
 
 		add_submenu_page(
 			'footnotes-made-easy',
-			__( 'Get Help — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Get Help', 'footnotes-made-easy' ),
 			__( 'Get Help', 'footnotes-made-easy' ),
 			'manage_network_options',
 			'footnotes-help',
@@ -786,7 +896,7 @@ class swas_wp_footnotes {
 		// Tools submenu
 		add_submenu_page(
 			'footnotes-made-easy',
-			__( 'Tools — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Tools', 'footnotes-made-easy' ),
 			__( 'Tools', 'footnotes-made-easy' ),
 			'manage_options',
 			'footnotes-tools',
@@ -796,7 +906,7 @@ class swas_wp_footnotes {
 		// Help submenu
 		add_submenu_page(
 			'footnotes-made-easy',
-			__( 'Get Help — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Get Help', 'footnotes-made-easy' ),
 			__( 'Get Help', 'footnotes-made-easy' ),
 			'manage_options',
 			'footnotes-help',

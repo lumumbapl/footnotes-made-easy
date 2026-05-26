@@ -1,0 +1,155 @@
+/**
+ * Welcome modal — Footnotes Made Easy
+ * Shown once after fresh install or update from an older version.
+ */
+( function () {
+    'use strict';
+
+    var config = window.fmeWelcome || {};
+    if ( ! config.show ) return;
+
+    // ── Build modal HTML ──────────────────────────────────────
+
+    var features = [
+        {
+            icon: '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4h14v2H3zm0 5h9v2H3zm0 5h11v2H3z"/></svg>',
+            title: 'Brand new UI',
+            desc:  'Redesigned admin with tabbed settings, a dashboard, tools, and help page.',
+        },
+        {
+            icon: '<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>',
+            title: 'Suppress controls',
+            desc:  'Hide footnotes on homepages, archives, search, feeds, and custom URLs.',
+        },
+        {
+            icon: '<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>',
+            title: 'Custom delimiters',
+            desc:  'Change (( )) to any opening and closing tags you prefer.',
+        },
+        {
+            icon: '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4zM3 8a1 1 0 000 2v3a2 2 0 002 2h10a2 2 0 002-2v-3a1 1 0 100-2H3z"/></svg>',
+            title: 'Export & Import',
+            desc:  'Back up your settings and reuse them across multiple sites instantly.',
+        },
+    ];
+
+    function buildModal() {
+        var featuresHtml = features.map( function ( f ) {
+            return '<div class="fme-welcome-feature">' +
+                '<div class="fme-welcome-feature__icon">' + f.icon + '</div>' +
+                '<div>' +
+                '<p class="fme-welcome-feature__title">' + f.title + '</p>' +
+                '<p class="fme-welcome-feature__desc">' + f.desc + '</p>' +
+                '</div>' +
+                '</div>';
+        } ).join( '' );
+
+        var html =
+            // Loader
+            '<div class="fme-page-loader" id="fme-page-loader">' +
+            '<div class="fme-page-loader__spinner"></div>' +
+            '<p class="fme-page-loader__text">Loading...</p>' +
+            '</div>' +
+
+            // Overlay
+            '<div class="fme-welcome-overlay fme-welcome-open" id="fme-welcome-overlay">' +
+            '<div class="fme-welcome-modal" role="dialog" aria-modal="true" aria-labelledby="fme-welcome-title">' +
+
+            // Close button
+            '<button type="button" class="fme-welcome-modal__close" id="fme-welcome-close" aria-label="Close">' +
+            '<svg viewBox="0 0 12 12" fill="none" width="12" height="12"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>' +
+            '</button>' +
+
+            // Hero
+            '<div class="fme-welcome-modal__hero">' +
+            '<div class="fme-welcome-modal__badge">✦ ' + ( config.isUpdate ? 'Updated to ' : 'Welcome to ' ) + 'v' + ( config.version || '3.2' ) + '</div>' +
+            '<h2 class="fme-welcome-modal__title" id="fme-welcome-title">Footnotes Made Easy,<br>completely redesigned</h2>' +
+            '<p class="fme-welcome-modal__subtitle">A brand new interface, more controls, and the foundation for powerful Pro features — all in one update.</p>' +
+            '</div>' +
+
+            // Body
+            '<div class="fme-welcome-modal__body">' +
+            '<p class="fme-welcome-modal__section-label">What\'s new</p>' +
+            '<div class="fme-welcome-features">' + featuresHtml + '</div>' +
+
+            // Pro teaser
+            '<div class="fme-welcome-pro">' +
+            '<div class="fme-welcome-pro__icon">🚀</div>' +
+            '<div class="fme-welcome-pro__text">' +
+            '<p class="fme-welcome-pro__title">Footnotes Made Easy Pro — coming soon</p>' +
+            '<p class="fme-welcome-pro__desc">Citations in APA, MLA &amp; Chicago · Reusable Footnote Library · Gutenberg sidebar panel</p>' +
+            '</div>' +
+            '</div>' +
+
+            // CTA
+            '<button type="button" class="fme-welcome-modal__cta" id="fme-welcome-cta">Explore Footnotes Made Easy →</button>' +
+
+            '</div>' + // body
+            '</div>' + // modal
+            '</div>'; // overlay
+
+        var div = document.createElement( 'div' );
+        div.innerHTML = html;
+        while ( div.firstChild ) {
+            document.body.appendChild( div.firstChild );
+        }
+    }
+
+    // ── Blur the page content behind the modal ────────────────
+
+    function unblurPage() {
+        // Remove the server-injected preblur style
+        var preblur = document.getElementById( 'fme-welcome-preblur' );
+        if ( preblur ) preblur.remove();
+        // Also remove any JS-added blur classes
+        document.querySelectorAll( '.fme-welcome-blur' ).forEach( function ( el ) {
+            el.classList.remove( 'fme-welcome-blur' );
+        } );
+    }
+
+    // ── Dismiss and show loader ───────────────────────────────
+
+    function dismiss() {
+        var overlay = document.getElementById( 'fme-welcome-overlay' );
+        var loader  = document.getElementById( 'fme-page-loader' );
+
+        if ( overlay ) overlay.style.display = 'none';
+        unblurPage();
+
+        // Show loader for 2 seconds then hide
+        if ( loader ) {
+            loader.classList.add( 'fme-loader-active' );
+            setTimeout( function () {
+                loader.classList.remove( 'fme-loader-active' );
+            }, 2000 );
+        }
+
+        // Mark as shown via AJAX
+        if ( config.ajaxUrl && config.nonce ) {
+            fetch( config.ajaxUrl, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body:    'action=fme_dismiss_welcome&nonce=' + config.nonce,
+            } );
+        }
+    }
+
+    // ── Init ─────────────────────────────────────────────────
+
+    document.addEventListener( 'DOMContentLoaded', function () {
+        buildModal();
+
+        var closeBtn = document.getElementById( 'fme-welcome-close' );
+        var ctaBtn   = document.getElementById( 'fme-welcome-cta' );
+        var overlay  = document.getElementById( 'fme-welcome-overlay' );
+
+        if ( closeBtn ) closeBtn.addEventListener( 'click', dismiss );
+        if ( ctaBtn )   ctaBtn.addEventListener(   'click', dismiss );
+
+        // Escape key
+        document.addEventListener( 'keydown', function ( e ) {
+            if ( e.key === 'Escape' ) dismiss();
+        } );
+    } );
+
+} )();
