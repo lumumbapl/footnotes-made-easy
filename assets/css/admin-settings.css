@@ -1188,3 +1188,274 @@ body.fme-citations-locked .fme-settings-sidebar {
 body.fme-citations-locked .fme-settings-main {
     max-width: 720px;
 }
+
+/* ── Help page ───────────────────────────────────────── */
+.fme-code-block {
+    font-family: monospace;
+    font-size: 13px;
+    background: #f6f7f7;
+    border: 1px solid #e2e4e7;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 10px 0;
+    color: #1d2327;
+    line-height: 1.6;
+}
+
+.fme-code-marker {
+    color: #534AB7;
+    font-weight: 600;
+}
+
+/* How it works steps */
+.fme-help-steps {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.fme-help-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+    min-width: 150px;
+    background: #f9fafb;
+    border: 1px solid #e2e4e7;
+    border-radius: 6px;
+    padding: 14px;
+}
+
+.fme-help-step__icon {
+    width: 32px;
+    height: 32px;
+    background: #EEEDFE;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #534AB7;
+}
+
+.fme-help-step__icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.fme-help-step__title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 3px;
+}
+
+.fme-help-step__desc {
+    font-size: 12px;
+    color: #646970;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.fme-help-step__arrow {
+    font-size: 18px;
+    color: #c3c4c7;
+    align-self: center;
+    padding: 0 2px;
+    flex-shrink: 0;
+}
+
+/* Settings tab badges */
+.fme-help-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.fme-badge-pro {
+    background: #534AB7;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.03em;
+}
+
+/* Pro features grid */
+.fme-help-pro-grid {
+    display: grid;
+    grid-template-columns: repeat( 3, 1fr );
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.fme-help-pro-card {
+    border: 1px solid #e2e4e7;
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.fme-help-pro-card__icon {
+    width: 24px;
+    height: 24px;
+    color: #534AB7;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.fme-help-pro-card__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 5px;
+}
+
+.fme-help-pro-card__desc {
+    font-size: 12px;
+    color: #646970;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.fme-help-pro-cta {
+    background: #534AB7 !important;
+    border-color: #534AB7 !important;
+    color: #fff !important;
+    font-size: 13px !important;
+}
+
+.fme-help-pro-cta:hover {
+    background: #433aa0 !important;
+    border-color: #433aa0 !important;
+}
+
+/* FAQ items */
+.fme-faq-item {
+    padding: 12px 0;
+}
+
+.fme-faq-item--bordered {
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.fme-faq-q {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 5px;
+}
+
+.fme-faq-a {
+    font-size: 13px;
+    color: #646970;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Help & resources sidebar card */
+.fme-help-links-card {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.fme-help-links-card__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.fme-help-links-card__head svg {
+    width: 18px;
+    height: 18px;
+    color: #534AB7;
+    flex-shrink: 0;
+}
+
+.fme-help-links-card__head h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0;
+}
+
+@media screen and ( max-width: 782px ) {
+    .fme-help-steps {
+        flex-direction: column;
+    }
+    .fme-help-step__arrow {
+        transform: rotate( 90deg );
+        align-self: flex-start;
+        margin-left: 20px;
+    }
+    .fme-help-pro-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Permissions page — multisite mode radio options ─── */
+.fme-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 540px;
+}
+
+.fme-radio-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid #e2e4e7;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.fme-radio-option:hover {
+    border-color: #534AB7;
+    background: #f9f8ff;
+}
+
+.fme-radio-option--active {
+    border-color: #534AB7;
+    background: #f0eeff;
+}
+
+.fme-radio-option input[type="radio"] {
+    margin-top: 3px;
+    flex-shrink: 0;
+    accent-color: #534AB7;
+}
+
+.fme-radio-option strong {
+    display: block;
+    font-size: 13px;
+    color: #1d2327;
+    margin-bottom: 3px;
+}
+
+.fme-radio-option .description {
+    margin: 0;
+    font-size: 12px;
+}
+
+.fme-section-label-sub {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: #646970;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-top: 3px;
+}

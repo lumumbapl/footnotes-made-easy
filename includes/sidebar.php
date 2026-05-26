@@ -8,6 +8,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template file; variables are prefixed with fme_.
 
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $fme_current_page = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : '';
@@ -15,6 +16,10 @@ $fme_current_page = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : '';
 $fme_pro_active = defined( 'FME_PRO_VERSION' )
     && class_exists( 'FME_Pro_License' )
     && FME_Pro_License::is_active();
+
+$fme_show_upsell = class_exists( 'swas_wp_footnotes' )
+    ? swas_wp_footnotes::show_upsell()
+    : true;
 
 // Citations tab URL for the settings tip link
 $fme_citations_url = admin_url( 'admin.php?page=footnotes-settings#citations' );
@@ -53,7 +58,15 @@ $fme_allowed_tip_html = [
         <p class="fme-tip-card__text"><?php echo wp_kses( $fme_tip, $fme_allowed_tip_html ); ?></p>
     </div>
 
-    <?php else : ?>
+    <?php elseif ( defined( 'FME_PRO_VERSION' ) && ! $fme_pro_active && is_multisite() && ! is_super_admin() ) : ?>
+    <!-- Subsite notice — Pro installed but not licensed, contact network admin -->
+    <div class="fme-tip-card" style="border-left-color:#f59e0b;background:#fffbeb;">
+        <div class="fme-tip-card__icon" aria-hidden="true">🔒</div>
+        <h3 class="fme-tip-card__heading" style="color:#78350f;"><?php esc_html_e( 'Pro not activated', 'footnotes-made-easy' ); ?></h3>
+        <p class="fme-tip-card__text" style="color:#78350f;"><?php esc_html_e( 'Footnotes Made Easy Pro is installed but not yet licensed. Please contact your network administrator to activate the license.', 'footnotes-made-easy' ); ?></p>
+    </div>
+
+    <?php elseif ( $fme_show_upsell ) : ?>
     <!-- Upgrade nudge -->
     <div class="fme-upgrade-card">
         <div class="fme-upgrade-card__icon" aria-hidden="true">✦</div>
@@ -74,7 +87,7 @@ $fme_allowed_tip_html = [
         <h3 class="fme-review-card__heading"><?php esc_html_e( 'Enjoying Footnotes Made Easy?', 'footnotes-made-easy' ); ?></h3>
         <p class="fme-review-card__text"><?php esc_html_e( 'A 5-star review on WordPress.org helps other writers and researchers find the plugin. It takes less than a minute!', 'footnotes-made-easy' ); ?></p>
         <div class="fme-review-card__stars" aria-hidden="true">
-            <?php for ( $fme_i = 0; $fme_i < 5; $fme_i++ ) : ?>
+            <?php for ( $fme_star_i = 0; $fme_star_i < 5; $fme_star_i++ ) : ?>
             <svg viewBox="0 0 20 20"><path d="M10 2l2.4 5 5.6.8-4 3.9.9 5.5L10 14.5l-4.9 2.7.9-5.5L2 7.8l5.6-.8z"/></svg>
             <?php endfor; ?>
         </div>

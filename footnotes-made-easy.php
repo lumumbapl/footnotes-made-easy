@@ -3,7 +3,7 @@
  * Plugin Name:       Footnotes Made Easy
  * Plugin URI:        https://lumumbas-blog.co.ke/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           3.2.0-beta.7
+ * Version:           3.2.0-beta.8
  * Requires at least: 4.6
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
@@ -187,7 +187,8 @@ class swas_wp_footnotes {
 
         // Hook me up
         add_action( 'the_content', array( $this, 'process' ), $this->current_options[ 'priority' ] );
-        add_action( 'admin_menu', array( $this, 'add_options_page' ) ); 		// Insert the Admin panel.
+        add_action( 'admin_menu',         array( $this, 'add_options_page' ) );      // Insert the Admin panel.
+        add_action( 'network_admin_menu',  array( $this, 'add_network_menu' ) );         // Network admin menu.
         add_action( 'wp_head', array( $this, 'insert_styles' ) );
         if ( $this->current_options[ 'pretty_tooltips' ] ) add_action( 'wp_enqueue_scripts', array( $this, 'tooltip_scripts' ) );
 
@@ -557,6 +558,10 @@ class swas_wp_footnotes {
 	* @since	1.0
 	*/
 
+
+	/**
+	 * Permissions (Subsites) page — network admin only.
+	 */
 	function footnotes_options_page() {
 
 		$this->current_options = get_option( 'swas_footnote_options' );
@@ -599,7 +604,79 @@ class swas_wp_footnotes {
 	* @since	1.0
 	*/
 
+
+    /**
+     * Multisite helpers
+     */
+
+    /**
+     * Get the multisite mode.
+     * Returns 'network' or 'override' (default 'override' = no network management).
+     */
+    public static function get_ms_mode(): string {
+        if ( ! is_multisite() ) return 'override';
+        return get_site_option( 'fme_ms_mode', 'override' );
+    }
+
+    /**
+     * Is the current user a network super admin?
+     */
+    public static function is_network_admin(): bool {
+        return is_multisite() && is_super_admin();
+    }
+
+    /**
+     * Get options — respects multisite network settings.
+     * In network-managed mode, returns network options.
+     * In override mode, returns subsite options with network defaults as fallback.
+     */
+    public function get_options(): array {
+        if ( ! is_multisite() ) {
+            return $this->current_options;
+        }
+        $mode = self::get_ms_mode();
+        if ( $mode === 'network' ) {
+            $network_opts = get_site_option( 'fme_network_options', [] );
+            return ! empty( $network_opts ) ? $network_opts : $this->current_options;
+        }
+        // Override mode — subsite opts with network defaults as fallback
+        $network_defaults = get_site_option( 'fme_network_options', [] );
+        $subsite_opts     = get_option( 'swas_footnote_options', [] );
+        if ( empty( $network_defaults ) ) {
+            return ! empty( $subsite_opts ) ? $subsite_opts : $this->current_options;
+        }
+        // Merge: subsite values override network defaults
+        return array_merge( $network_defaults, ! empty( $subsite_opts ) ? $subsite_opts : [] );
+    }
+
+    /**
+     * Should the current user see the plugin menu?
+     * In network-managed mode, hide from non-super-admins.
+     */
+    public static function user_can_see_menu(): bool {
+        if ( ! is_multisite() ) return current_user_can( 'manage_options' );
+        // In network-managed mode, hide menu on ALL regular admin pages (subsites AND main site)
+        // Only show in the network admin itself
+        if ( self::get_ms_mode() === 'network' && ! is_network_admin() ) return false;
+        return current_user_can( 'manage_options' );
+    }
+
+    /**
+     * Should upgrade/upsell cards show for the current user?
+     */
+    public static function show_upsell(): bool {
+        if ( ! is_multisite() ) return true;
+        // Only show upsell in the network admin, to super admins
+        if ( is_network_admin() && is_super_admin() ) return true;
+        return false;
+    }
+
 	function add_options_page() {
+
+		// In network-managed mode, hide menu from non-super-admins
+		if ( ! self::user_can_see_menu() ) {
+			return;
+		}
 
 		global $footnotes_hook;
 
@@ -640,6 +717,71 @@ class swas_wp_footnotes {
 		add_action( 'admin_menu', array( $this, 'add_secondary_menu_pages' ), 30 );
 	}
 
+	/**
+	 * Register the full plugin menu in the network admin.
+	 * Mirrors the regular admin menu plus a Permissions (Subsites) item.
+	 */
+	function add_network_menu() {
+		if ( ! is_multisite() || ! is_super_admin() ) return;
+
+		add_menu_page(
+			__( 'Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Footnotes', 'footnotes-made-easy' ),
+			'manage_network_options',
+			'footnotes-made-easy',
+			array( $this, 'footnotes_dashboard_page' ),
+			'dashicons-editor-ol',
+			6
+		);
+
+		add_submenu_page(
+			'footnotes-made-easy',
+			__( 'Dashboard — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Dashboard', 'footnotes-made-easy' ),
+			'manage_network_options',
+			'footnotes-made-easy',
+			array( $this, 'footnotes_dashboard_page' )
+		);
+
+		add_submenu_page(
+			'footnotes-made-easy',
+			__( 'Footnotes Settings — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Footnotes Settings', 'footnotes-made-easy' ),
+			'manage_network_options',
+			'footnotes-settings',
+			array( $this, 'footnotes_options_page' )
+		);
+
+		// Tools, Get Help registered at priority 30 so Pro (priority 20) inserts Library between Settings and Tools
+		add_action( 'network_admin_menu', array( $this, 'add_network_secondary_pages' ), 30 );
+	}
+
+	/**
+	 * Register Tools and Get Help in network admin at priority 30.
+	 * Pro inserts Library at priority 20 — between Settings and Tools.
+	 */
+	function add_network_secondary_pages() {
+		if ( ! is_multisite() || ! is_super_admin() ) return;
+
+		add_submenu_page(
+			'footnotes-made-easy',
+			__( 'Tools — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Tools', 'footnotes-made-easy' ),
+			'manage_network_options',
+			'footnotes-tools',
+			array( $this, 'footnotes_tools_page' )
+		);
+
+		add_submenu_page(
+			'footnotes-made-easy',
+			__( 'Get Help — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Get Help', 'footnotes-made-easy' ),
+			'manage_network_options',
+			'footnotes-help',
+			array( $this, 'footnotes_help_page' )
+		);
+	}
+
 	function add_secondary_menu_pages() {
 		// Tools submenu
 		add_submenu_page(
@@ -654,8 +796,8 @@ class swas_wp_footnotes {
 		// Help submenu
 		add_submenu_page(
 			'footnotes-made-easy',
-			__( 'Help — Footnotes Made Easy', 'footnotes-made-easy' ),
-			__( 'Help', 'footnotes-made-easy' ),
+			__( 'Get Help — Footnotes Made Easy', 'footnotes-made-easy' ),
+			__( 'Get Help', 'footnotes-made-easy' ),
 			'manage_options',
 			'footnotes-help',
 			array( $this, 'footnotes_help_page' )
@@ -894,7 +1036,10 @@ class swas_wp_footnotes {
 			exit;
 		}
 
-		$file = $_FILES['fme_import_file'];
+		$file = array(
+			'name'     => isset( $_FILES['fme_import_file']['name'] ) ? sanitize_file_name( wp_unslash( $_FILES['fme_import_file']['name'] ) ) : '',
+			'tmp_name' => isset( $_FILES['fme_import_file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['fme_import_file']['tmp_name'] ) ) : '',
+		);
 
 		// Validate file type
 		$ext = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );

@@ -36,7 +36,7 @@ $fme_version = get_plugin_data( plugin_dir_path( __FILE__ ) . '../footnotes-made
 
     <!-- ── Saved notice ─────────────────────────────────────── -->
     <?php if ( ! empty( $_POST['save_options'] ) && ! empty( $_POST['footnotes_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['footnotes_nonce'] ) ), 'footnotes-nonce' ) ) : ?>
-    <?php do_action( 'fme_settings_saved' ); ?>
+    <?php do_action( 'fme_settings_saved' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- fme_ is the plugin prefix. ?>
     <div class="fme-notice fme-notice-success fme-notice-autodismiss" id="fme-saved-notice">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 0a7 7 0 100 14A7 7 0 007 0zm3.293 4.793l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L5.586 6.672l3.293-3.293a1 1 0 111.414 1.414z"/></svg>
         <?php esc_html_e( 'Settings saved successfully.', 'footnotes-made-easy' ); ?>
@@ -52,7 +52,10 @@ $fme_version = get_plugin_data( plugin_dir_path( __FILE__ ) . '../footnotes-made
         <button type="button" class="fme-inner-tab" data-tab="behaviour"><?php esc_html_e( 'Behaviour', 'footnotes-made-easy' ); ?></button>
         <button type="button" class="fme-inner-tab" data-tab="suppress"><?php esc_html_e( 'Suppress', 'footnotes-made-easy' ); ?></button>
         <button type="button" class="fme-inner-tab" data-tab="advanced"><?php esc_html_e( 'Advanced', 'footnotes-made-easy' ); ?></button>
-        <?php if ( defined( 'FME_PRO_VERSION' ) ) : ?>
+        <?php
+        $fme_show_citations_tab = ! is_multisite() || is_network_admin() || ( class_exists( 'swas_wp_footnotes' ) && swas_wp_footnotes::show_upsell() ) || defined( 'FME_PRO_VERSION' );
+        if ( $fme_show_citations_tab ) :
+            if ( defined( 'FME_PRO_VERSION' ) ) : ?>
         <button type="button" class="fme-inner-tab fme-inner-tab--pro" data-tab="citations">
             <?php esc_html_e( 'Citations', 'footnotes-made-easy' ); ?>
             <?php if ( ! FME_Pro_License::is_active() ) : ?>
@@ -67,6 +70,7 @@ $fme_version = get_plugin_data( plugin_dir_path( __FILE__ ) . '../footnotes-made
             <?php esc_html_e( 'Citations', 'footnotes-made-easy' ); ?>
             <span class="fme-pro-tab-badge">PRO</span>
         </a>
+        <?php endif; ?>
         <?php endif; ?>
     </nav>
 
@@ -286,7 +290,7 @@ $fme_version = get_plugin_data( plugin_dir_path( __FILE__ ) . '../footnotes-made
 
                 </div><!-- /#fme-panel-advanced -->
 
-                <?php do_action( 'fme_settings_after_panels' ); ?>
+                <?php do_action( 'fme_settings_after_panels' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- fme_ is the plugin prefix. ?>
 
                 <p class="submit fme-submit-row">
                     <button type="submit" name="save_options" value="1" class="button button-primary"><?php esc_html_e( 'Save changes', 'footnotes-made-easy' ); ?></button>

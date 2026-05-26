@@ -10,9 +10,24 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template file included within class scope; all variables use fme_ prefix.
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- GET params used for read-only notice display only, not form processing.
 
-$fme_version  = isset( $this ) ? get_plugin_data( plugin_dir_path( dirname( __FILE__ ) ) . 'footnotes-made-easy.php', false, false )['Version'] ?? '' : '';
-$preserve_on  = get_option( 'fme_preserve_settings_on_uninstall', '0' ) === '1';
+$fme_tools_version = isset( $this ) ? get_plugin_data( plugin_dir_path( dirname( __FILE__ ) ) . 'footnotes-made-easy.php', false, false )['Version'] ?? '' : '';
+$fme_preserve_on   = get_option( 'fme_preserve_settings_on_uninstall', '0' ) === '1';
+
+// Handle multisite permissions save — must run before any HTML output
+if (
+    is_multisite() &&
+    is_network_admin() &&
+    isset( $_POST['fme_ms_mode_save'] ) &&
+    check_admin_referer( 'fme_ms_mode_nonce', 'fme_ms_mode_nonce' )
+) {
+    $fme_new_mode = sanitize_key( wp_unslash( $_POST['fme_ms_mode'] ?? 'override' ) );
+    update_site_option( 'fme_ms_mode', in_array( $fme_new_mode, [ 'network', 'override' ], true ) ? $fme_new_mode : 'override' );
+    wp_safe_redirect( network_admin_url( 'admin.php?page=footnotes-tools&ms_saved=1' ) );
+    exit;
+}
 ?>
 <div class="wrap fme-wrap">
 
@@ -25,8 +40,8 @@ $preserve_on  = get_option( 'fme_preserve_settings_on_uninstall', '0' ) === '1';
             <span class="fme-topbar-name"><?php esc_html_e( 'Footnotes Made Easy', 'footnotes-made-easy' ); ?></span>
             <?php if ( defined( 'FME_PRO_VERSION' ) && class_exists( 'FME_Pro_License' ) && FME_Pro_License::is_active() ) : ?>
             <span class="fme-version-badge fme-version-badge--pro">PRO</span>
-            <?php elseif ( $fme_version ) : ?>
-            <span class="fme-version-badge">v<?php echo esc_html( $fme_version ); ?></span>
+            <?php elseif ( $fme_tools_version ) : ?>
+            <span class="fme-version-badge">v<?php echo esc_html( $fme_tools_version ); ?></span>
             <?php endif; ?>
         </div>
         <div class="fme-topbar-links">
@@ -34,6 +49,16 @@ $preserve_on  = get_option( 'fme_preserve_settings_on_uninstall', '0' ) === '1';
             <a href="https://alvise.com/docs/plugins/footnotes-made-easy/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Docs', 'footnotes-made-easy' ); ?></a>
         </div>
     </div>
+
+    <?php if ( isset( $_GET['ms_saved'] ) ) : ?>
+    <div class="fme-notice fme-notice-success fme-notice-autodismiss" id="fme-saved-notice">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 0a7 7 0 100 14A7 7 0 007 0zm3.293 4.793l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L5.586 6.672l3.293-3.293a1 1 0 111.414 1.414z"/></svg>
+        <?php esc_html_e( 'Multisite permissions saved.', 'footnotes-made-easy' ); ?>
+        <button type="button" class="fme-notice-close" aria-label="<?php esc_attr_e( 'Dismiss', 'footnotes-made-easy' ); ?>">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+    </div>
+    <?php endif; ?>
 
     <?php if ( isset( $_GET['reset'] ) ) : ?>
     <div class="fme-notice fme-notice-success fme-notice-autodismiss" id="fme-saved-notice">
@@ -56,19 +81,21 @@ $preserve_on  = get_option( 'fme_preserve_settings_on_uninstall', '0' ) === '1';
     <?php endif; ?>
 
     <?php if ( isset( $_GET['import'] ) ) :
-        $import_status = $_GET['import'];
-        $import_ok     = $import_status === 'success';
-        $import_partial = $import_status === 'partial';
-        $import_msg = $import_ok
+        $fme_import_status  = sanitize_key( wp_unslash( $_GET['import'] ) );
+        $fme_import_ok      = $fme_import_status === 'success';
+        $fme_import_partial = $fme_import_status === 'partial';
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- sanitize_text_field( wp_unslash() ) used; urldecode() needed to decode the URL-encoded redirect message.
+        $fme_raw_msg = isset( $_GET['import_message'] ) ? sanitize_text_field( wp_unslash( urldecode( $_GET['import_message'] ) ) ) : '';
+        $fme_import_msg     = $fme_import_ok
             ? __( 'Settings imported successfully.', 'footnotes-made-easy' )
-            : sanitize_text_field( urldecode( $_GET['import_message'] ?? __( 'Import failed.', 'footnotes-made-easy' ) ) );
-        $notice_type = $import_ok ? 'success' : ( $import_partial ? 'warning' : 'error' );
+            : ( $fme_raw_msg ?: __( 'Import failed.', 'footnotes-made-easy' ) );
+        $fme_notice_type    = $fme_import_ok ? 'success' : ( $fme_import_partial ? 'warning' : 'error' );
     ?>
-    <div class="fme-notice fme-notice-<?php echo esc_attr( $notice_type ); ?> fme-notice-autodismiss" id="fme-saved-notice">
-        <?php if ( $import_ok ) : ?>
+    <div class="fme-notice fme-notice-<?php echo esc_attr( $fme_notice_type ); ?> fme-notice-autodismiss" id="fme-saved-notice">
+        <?php if ( $fme_import_ok ) : ?>
         <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 0a7 7 0 100 14A7 7 0 007 0zm3.293 4.793l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L5.586 6.672l3.293-3.293a1 1 0 111.414 1.414z"/></svg>
         <?php endif; ?>
-        <?php echo esc_html( $import_msg ); ?>
+        <?php echo esc_html( $fme_import_msg ); ?>
         <button type="button" class="fme-notice-close" aria-label="<?php esc_attr_e( 'Dismiss', 'footnotes-made-easy' ); ?>">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </button>
@@ -228,7 +255,7 @@ $preserve_on  = get_option( 'fme_preserve_settings_on_uninstall', '0' ) === '1';
                                            id="fme_preserve_settings"
                                            name="fme_preserve_settings"
                                            value="1"
-                                           <?php checked( $preserve_on ); ?>>
+                                           <?php checked( $fme_preserve_on ); ?>>
                                     <span class="fme-toggle-slider"></span>
                                 </label>
                                 <p class="description" style="margin-top:8px;">
@@ -245,6 +272,47 @@ $preserve_on  = get_option( 'fme_preserve_settings_on_uninstall', '0' ) === '1';
                     </div>
                 </form>
             </div>
+
+            <?php if ( is_multisite() && is_network_admin() ) :
+                $fme_ms_mode = swas_wp_footnotes::get_ms_mode();
+            ?>
+            <!-- ── Multisite permissions ──────────────── -->
+            <div class="fme-section">
+                <h3 class="fme-section-label"><?php esc_html_e( 'Multisite permissions', 'footnotes-made-easy' ); ?></h3>
+
+
+                <form method="post" action="">
+                    <?php wp_nonce_field( 'fme_ms_mode_nonce', 'fme_ms_mode_nonce' ); ?>
+                    <input type="hidden" name="fme_ms_mode_save" value="1">
+                    <table class="fme-form-table">
+                        <tr>
+                            <th><?php esc_html_e( 'Subsite access', 'footnotes-made-easy' ); ?></th>
+                            <td>
+                                <div class="fme-radio-group">
+                                    <label class="fme-radio-option<?php echo $fme_ms_mode === 'override' ? ' fme-radio-option--active' : ''; ?>">
+                                        <input type="radio" name="fme_ms_mode" value="override"<?php checked( $fme_ms_mode, 'override' ); ?>>
+                                        <div>
+                                            <strong><?php esc_html_e( 'Allow subsite override', 'footnotes-made-easy' ); ?></strong>
+                                            <p class="description"><?php esc_html_e( 'Subsite admins can manage their own Footnotes settings independently.', 'footnotes-made-easy' ); ?></p>
+                                        </div>
+                                    </label>
+                                    <label class="fme-radio-option<?php echo $fme_ms_mode === 'network' ? ' fme-radio-option--active' : ''; ?>">
+                                        <input type="radio" name="fme_ms_mode" value="network"<?php checked( $fme_ms_mode, 'network' ); ?>>
+                                        <div>
+                                            <strong><?php esc_html_e( 'Network managed', 'footnotes-made-easy' ); ?></strong>
+                                            <p class="description"><?php esc_html_e( 'The Footnotes menu is hidden from subsite admins. Settings are controlled network-wide from here.', 'footnotes-made-easy' ); ?></p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <p class="submit" style="margin-top:14px;padding:0;">
+                                    <button type="submit" class="button button-primary"><?php esc_html_e( 'Save', 'footnotes-made-easy' ); ?></button>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+            <?php endif; ?>
 
         </div><!-- /.fme-settings-main -->
 
