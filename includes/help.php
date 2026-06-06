@@ -45,7 +45,7 @@ $fme_show_upsell = class_exists( 'swas_wp_footnotes' ) ? swas_wp_footnotes::show
             <div class="fme-section">
                 <h3 class="fme-section-label"><?php esc_html_e( 'Quick start', 'footnotes-made-easy' ); ?></h3>
                 <p class="description"><?php esc_html_e( 'Wrap any text in double parentheses anywhere in your post or page content:', 'footnotes-made-easy' ); ?></p>
-                <div class="fme-code-block">This is a sentence with a footnote.<span class="fme-code-marker">((This is the footnote text.))</span></div>
+                <div class="fme-code-block">This is a sentence with a footnote <span class="fme-code-marker">((This is the footnote text))</span>.</div>
                 <p class="description" style="margin-top:10px;"><?php esc_html_e( 'The plugin removes the marker from the text, adds a numbered reference in its place, and appends a footnotes list at the bottom of the post.', 'footnotes-made-easy' ); ?></p>
             </div>
 
@@ -59,7 +59,7 @@ $fme_show_upsell = class_exists( 'swas_wp_footnotes' ) ? swas_wp_footnotes::show
                         </div>
                         <div>
                             <p class="fme-help-step__title"><?php esc_html_e( '1. Write content', 'footnotes-made-easy' ); ?></p>
-                            <p class="fme-help-step__desc"><?php esc_html_e( 'Add (( )) markers anywhere in your post or page.', 'footnotes-made-easy' ); ?></p>
+                            <p class="fme-help-step__desc"><?php esc_html_e( 'Add (( )) markers anywhere in your post or page to insert a footnote.', 'footnotes-made-easy' ); ?></p>
                         </div>
                     </div>
                     <div class="fme-help-step__arrow" aria-hidden="true">→</div>
@@ -134,7 +134,7 @@ $fme_show_upsell = class_exists( 'swas_wp_footnotes' ) ? swas_wp_footnotes::show
                     <div class="fme-help-pro-card">
                         <svg class="fme-help-pro-card__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg>
                         <p class="fme-help-pro-card__title"><?php esc_html_e( 'Gutenberg panel', 'footnotes-made-easy' ); ?></p>
-                        <p class="fme-help-pro-card__desc"><?php esc_html_e( 'Manage and format all footnotes from the editor sidebar without leaving the post.', 'footnotes-made-easy' ); ?></p>
+                        <p class="fme-help-pro-card__desc"><?php esc_html_e( 'Manage all footnotes from the editor sidebar without leaving the post.', 'footnotes-made-easy' ); ?></p>
                     </div>
                 </div>
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=footnotes-pro' ) ); ?>" class="button button-primary fme-help-pro-cta">

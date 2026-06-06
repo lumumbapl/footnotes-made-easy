@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
     <div class="fme-page-footer__brand">
         <span><?php esc_html_e( 'Made with', 'footnotes-made-easy' ); ?></span>
         <svg class="fme-page-footer__heart" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 14s-6-3.84-6-8a4 4 0 0 1 6-3.46A4 4 0 0 1 14 6c0 4.16-6 8-6 8z"/></svg>
-        <span><?php esc_html_e( 'by Altvise, LLC', 'footnotes-made-easy' ); ?></span>
+        <span><?php esc_html_e( 'by AltviseWP, LLC', 'footnotes-made-easy' ); ?></span>
     </div>
 
     <nav class="fme-page-footer__links">
