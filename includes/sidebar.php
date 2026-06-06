@@ -72,7 +72,7 @@ $fme_allowed_tip_html = [
         <div class="fme-upgrade-card__icon" aria-hidden="true">✦</div>
         <h3 class="fme-upgrade-card__heading"><?php esc_html_e( 'Upgrade to Pro', 'footnotes-made-easy' ); ?></h3>
         <p class="fme-upgrade-card__text"><?php esc_html_e( 'Unlock Citations, a reusable Footnote Library, and a Gutenberg sidebar panel — all in one upgrade.', 'footnotes-made-easy' ); ?></p>
-        <a href="https://lumumbas-blog.co.ke/footnotes-made-easy-pro/" target="_blank" rel="noopener noreferrer" class="fme-upgrade-card__btn">
+        <a href="<?php echo esc_url( admin_url( 'admin.php?page=footnotes-pro' ) ); ?>" class="fme-upgrade-card__btn">
             <?php esc_html_e( 'Learn more', 'footnotes-made-easy' ); ?>
             <svg viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7 3.5l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>

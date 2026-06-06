@@ -4,7 +4,7 @@
  * Plugin URI:        https://lumumbas-blog.co.ke/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
  * Version:           3.2.0-beta.8
- * Requires at least: 4.6
+ * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
  * Author URI:        https://lumumbas-blog.co.ke
@@ -43,6 +43,7 @@ function fme_enqueue_styles( $hook ) {
         'footnotes-settings',
         'footnotes-help',
         'footnotes-tools',
+        'footnotes-pro',
     );
 
     // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- $_GET['page'] is a routing parameter, not form data.
@@ -101,7 +102,7 @@ add_action( 'admin_enqueue_scripts', 'fme_enqueue_styles' );
 /**
  * Enqueue the deactivation survey on the plugins page.
  */
-function fme_enqueue_deactivation_survey( string $hook ): void {
+function fme_enqueue_deactivation_survey( string $hook ): void { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Legacy function name, renaming would break existing installations.
     if ( $hook !== 'plugins.php' ) return;
 
     $plugin_data    = get_plugin_data( __FILE__, false, false );
@@ -138,7 +139,7 @@ add_action( 'admin_enqueue_scripts', 'fme_enqueue_deactivation_survey' );
 /**
  * Welcome modal — shown once after fresh install or update from an older version.
  */
-function fme_check_welcome_modal(): void {
+function fme_check_welcome_modal(): void { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Legacy function name, renaming would break existing installations.
     $plugin_data    = get_plugin_data( __FILE__, false, false );
     $current_ver    = $plugin_data['Version'] ?? '';
     $stored_ver     = get_option( 'fme_welcome_shown_version', '' );
@@ -150,13 +151,14 @@ function fme_check_welcome_modal(): void {
 }
 add_action( 'admin_init', 'fme_check_welcome_modal' );
 
-function fme_enqueue_welcome_modal( string $hook ): void {
+function fme_enqueue_welcome_modal( string $hook ): void { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Legacy function name, renaming would break existing installations.
     // Only show on our own plugin pages
     $fme_pages = [
         'toplevel_page_footnotes-made-easy',
         'footnotes_page_footnotes-settings',
         'footnotes_page_footnotes-tools',
         'footnotes_page_footnotes-help',
+        'footnotes_page_footnotes-pro',
         'footnotes_page_fme-pro-library',
         'footnotes_page_fme-pro-license',
     ];
@@ -192,7 +194,7 @@ add_action( 'admin_head', function (): void {
     if ( ! get_transient( 'fme_show_welcome' ) ) return;
     // Only on our pages
     $page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-    $our_pages = [ 'footnotes-made-easy', 'footnotes-settings', 'footnotes-tools', 'footnotes-help', 'fme-pro-library', 'fme-pro-license' ];
+    $our_pages = [ 'footnotes-made-easy', 'footnotes-settings', 'footnotes-tools', 'footnotes-help', 'footnotes-pro', 'fme-pro-library', 'fme-pro-license' ];
     if ( ! in_array( $page, $our_pages, true ) ) return;
     echo '<style id="fme-welcome-preblur">#wpcontent,#wpbody-content,#adminmenu{filter:blur(4px);pointer-events:none;user-select:none;}</style>';
 } );
@@ -208,9 +210,56 @@ add_action( 'wp_ajax_fme_dismiss_welcome', function (): void {
     wp_send_json_success();
 } );
 
+// AJAX handler — record Pro waitlist subscription in user meta
+add_action( 'wp_ajax_fme_record_waitlist', function (): void {
+    check_ajax_referer( 'fme_waitlist_nonce', 'nonce' );
+    update_user_meta( get_current_user_id(), 'fme_pro_waitlist_subscribed', true );
+    wp_send_json_success();
+} );
 
 
-// Instantiate the class
+
+// Inject admin CSS for full-width purple Upgrade to Pro menu item
+add_action( 'admin_head', function () {
+    if ( defined( 'FME_PRO_VERSION' ) || ! swas_wp_footnotes::show_upsell() ) return;
+    echo '<style>
+#adminmenu a[href="admin.php?page=footnotes-pro"] {
+    background: #534AB7 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    margin: 4px 0 2px !important;
+    border-radius: 0 !important;
+}
+#adminmenu a[href="admin.php?page=footnotes-pro"]:hover {
+    background: #433aa0 !important;
+    color: #fff !important;
+}
+#adminmenu a[href="admin.php?page=footnotes-pro"].current,
+#adminmenu li.current a[href="admin.php?page=footnotes-pro"] {
+    background: #433aa0 !important;
+    color: #fff !important;
+}
+</style>';
+} );
+// Inject admin CSS for full-width purple Upgrade to Pro menu item
+add_action( 'admin_head', function () {
+    if ( defined( 'FME_PRO_VERSION' ) || ! swas_wp_footnotes::show_upsell() ) return;
+    echo '<style>
+#adminmenu a[href="admin.php?page=footnotes-pro"] {
+    background: #534AB7 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    margin: 4px 0 2px !important;
+    border-radius: 0 !important;
+}
+#adminmenu a[href="admin.php?page=footnotes-pro"]:hover,
+#adminmenu li.current a[href="admin.php?page=footnotes-pro"] {
+    background: #433aa0 !important;
+    color: #fff !important;
+}
+</style>';
+} );
+
 $swas_wp_footnotes = new swas_wp_footnotes(); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 
 // Encapsulate in a class
@@ -397,7 +446,7 @@ class swas_wp_footnotes {
 		}
 
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$current_path = isset( $_SERVER[ 'REQUEST_URI' ] ) ? parse_url( sanitize_url( wp_unslash( $_SERVER[ 'REQUEST_URI' ] ) ), PHP_URL_PATH ) : '';
+		$current_path = isset( $_SERVER[ 'REQUEST_URI' ] ) ? wp_parse_url( sanitize_url( wp_unslash( $_SERVER[ 'REQUEST_URI' ] ) ), PHP_URL_PATH ) : '';
 		$current_path = untrailingslashit( $current_path );
 		if ( empty( $current_path ) ) {
 			$current_path = '/';
@@ -412,7 +461,7 @@ class swas_wp_footnotes {
 
 			// If it looks like a full URL, extract the path component
 			if ( false !== strpos( $line, '://' ) ) {
-				$parsed = parse_url( $line, PHP_URL_PATH );
+				$parsed = wp_parse_url( $line, PHP_URL_PATH );
 				$line = $parsed ? $parsed : $line;
 			}
 
@@ -913,6 +962,26 @@ class swas_wp_footnotes {
 			array( $this, 'footnotes_help_page' )
 		);
 
+		// Pro Coming Soon — only shown when Pro is not installed
+		if ( ! defined( 'FME_PRO_VERSION' ) && swas_wp_footnotes::show_upsell() ) {
+			add_submenu_page(
+				'footnotes-made-easy',
+				__( 'Upgrade to Pro', 'footnotes-made-easy' ),
+				'<span style="display:flex;align-items:center;gap:6px;">✦ ' . esc_html__( 'Upgrade to Pro', 'footnotes-made-easy' ) . '</span>',
+				'manage_options',
+				'footnotes-pro',
+				array( $this, 'footnotes_pro_page' )
+			);
+		}
+
+	} // end add_secondary_menu_pages()
+
+	/**
+	 * Pro Coming Soon page
+	 */
+	function footnotes_pro_page() {
+		$this->current_options = $this->get_options();
+		include plugin_dir_path( __FILE__ ) . 'includes/coming-soon-pro.php';
 	}
 
 	/**
@@ -1310,6 +1379,7 @@ class swas_wp_footnotes {
 			'footnotes-settings',
 			'footnotes-help',
 			'footnotes-tools',
+			'footnotes-pro',
 			'fme-pro-library',
 			'fme-pro-license',
 		);

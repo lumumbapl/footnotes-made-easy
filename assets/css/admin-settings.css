@@ -1095,31 +1095,31 @@
 
 /* ── Upgrade nudge card ───────────────────────────────── */
 .fme-upgrade-card {
-    background: linear-gradient( 135deg, #534AB7 0%, #6d5fd4 100% );
+    background: #fff;
+    border: 1px solid #ddd9f7;
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 16px;
     text-align: center;
-    color: #fff;
 }
 
 .fme-upgrade-card__icon {
     font-size: 22px;
     margin-bottom: 8px;
     display: block;
-    opacity: 0.9;
+    color: #534AB7;
 }
 
 .fme-upgrade-card__heading {
     font-size: 14px;
     font-weight: 700;
-    color: #fff;
+    color: #1d2327;
     margin: 0 0 8px;
 }
 
 .fme-upgrade-card__text {
     font-size: 12px;
-    color: rgba(255,255,255,0.85);
+    color: #646970;
     line-height: 1.6;
     margin: 0 0 16px;
 }
@@ -1127,20 +1127,23 @@
 .fme-upgrade-card__btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    background: #fff;
-    color: #534AB7;
+    background: #534AB7;
+    color: #fff;
     font-size: 12px;
     font-weight: 700;
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 9px 18px;
+    border-radius: 6px;
     text-decoration: none;
-    transition: background 0.15s, color 0.15s;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background 0.15s;
 }
 
 .fme-upgrade-card__btn:hover {
-    background: #f0eeff;
-    color: #433aa0;
+    background: #433aa0;
+    color: #fff;
 }
 
 .fme-upgrade-card__btn svg {
@@ -1887,4 +1890,363 @@ body.fme-citations-locked .fme-settings-main {
     .fme-welcome-modal__body {
         padding: 20px 20px 18px;
     }
+}
+
+/* ── Pro Coming Soon page ────────────────────────────── */
+.fme-pro-coming-soon {
+    max-width: 860px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+/* Hero */
+.fme-cs-hero {
+    background: linear-gradient( 145deg, #534AB7 0%, #3d3494 60%, #2a2468 100% );
+    border-radius: 16px;
+    padding: 48px 48px 40px;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+}
+.fme-cs-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+}
+.fme-cs-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+}
+.fme-cs-hero__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 20px;
+}
+.fme-cs-hero__title {
+    font-size: 36px;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 6px;
+    line-height: 1.15;
+    position: relative;
+}
+.fme-cs-hero__pro {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    padding: 2px 12px;
+    font-size: 26px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+.fme-cs-hero__sub {
+    font-size: 15px;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.7;
+    margin: 0 auto 32px;
+    max-width: 560px;
+    position: relative;
+}
+
+/* Countdown */
+.fme-cs-countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px 28px;
+    margin-bottom: 32px;
+    position: relative;
+}
+.fme-cs-countdown__unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 48px;
+}
+.fme-cs-countdown__num {
+    font-size: 32px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+.fme-cs-countdown__label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+}
+.fme-cs-countdown__sep {
+    font-size: 28px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.3);
+    line-height: 1;
+    margin-bottom: 14px;
+}
+
+/* Signup form */
+.fme-cs-signup { position: relative; }
+.fme-cs-signup__label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    margin: 0 0 12px;
+}
+.fme-cs-form {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.fme-cs-form__input {
+    padding: 10px 18px;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-size: 14px;
+    width: 280px;
+    font-family: inherit;
+    transition: border-color 0.15s;
+}
+.fme-cs-form__input::placeholder { color: rgba(255,255,255,0.45); }
+.fme-cs-form__input:focus { border-color: rgba(255,255,255,0.6); outline: none; }
+.fme-cs-form__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: #fff;
+    color: #534AB7;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, transform 0.1s;
+}
+.fme-cs-form__btn:hover { background: #f0eeff; transform: translateY(-1px); }
+.fme-cs-form__notice {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin: 10px 0 0;
+}
+.fme-cs-success {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 14px;
+    color: #fff;
+    justify-content: center;
+}
+
+/* Features section */
+.fme-cs-section {
+    margin-bottom: 32px;
+}
+.fme-cs-section__title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1d2327;
+    margin: 0 0 20px;
+    text-align: center;
+}
+.fme-cs-features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+.fme-cs-feature {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 10px;
+    padding: 20px;
+    transition: box-shadow 0.15s, border-color 0.15s;
+}
+.fme-cs-feature:hover {
+    border-color: #534AB7;
+    box-shadow: 0 4px 16px rgba(83,74,183,0.1);
+}
+.fme-cs-feature__icon {
+    width: 36px; height: 36px;
+    background: #f0eeff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    color: #534AB7;
+}
+.fme-cs-feature__icon svg { width: 18px; height: 18px; }
+.fme-cs-feature__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1d2327;
+    margin: 0 0 6px;
+}
+.fme-cs-feature__desc {
+    font-size: 12px;
+    color: #646970;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Pricing teaser */
+.fme-cs-pricing {
+    background: #f9f8ff;
+    border: 1px solid #ddd9f7;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    margin-bottom: 24px;
+}
+.fme-cs-pricing__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1d2327;
+    margin: 0 0 6px;
+}
+.fme-cs-pricing__sub {
+    font-size: 13px;
+    color: #646970;
+    margin: 0 0 24px;
+}
+.fme-cs-pricing__cards {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.fme-cs-pricing__card {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 10px;
+    padding: 20px 32px;
+    min-width: 160px;
+    position: relative;
+}
+.fme-cs-pricing__card--featured {
+    border-color: #534AB7;
+    box-shadow: 0 0 0 3px rgba(83,74,183,0.1);
+}
+.fme-cs-pricing__badge {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #534AB7;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 10px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.fme-cs-pricing__plan {
+    font-size: 12px;
+    font-weight: 600;
+    color: #646970;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+}
+.fme-cs-pricing__price {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1d2327;
+    line-height: 1;
+}
+.fme-cs-pricing__price span {
+    font-size: 14px;
+    font-weight: 400;
+    color: #646970;
+}
+.fme-cs-pricing__sites {
+    font-size: 12px;
+    color: #646970;
+    margin-top: 6px;
+}
+.fme-cs-pricing__lifetime {
+    font-size: 12px;
+    color: #646970;
+    margin: 0;
+}
+
+/* Footer CTA */
+.fme-cs-footer-cta {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid #f0f0f1;
+}
+.fme-cs-footer-cta p {
+    font-size: 13px;
+    color: #646970;
+    margin: 0 0 6px;
+}
+.fme-cs-footer-cta__link {
+    font-size: 13px;
+    font-weight: 600;
+    color: #534AB7;
+    text-decoration: none;
+}
+.fme-cs-footer-cta__link:hover { text-decoration: underline; }
+
+@media screen and ( max-width: 700px ) {
+    .fme-cs-hero { padding: 32px 20px 28px; }
+    .fme-cs-hero__title { font-size: 26px; }
+    .fme-cs-countdown { padding: 12px 16px; }
+    .fme-cs-countdown__num { font-size: 24px; }
+    .fme-cs-features { grid-template-columns: 1fr 1fr; }
+    .fme-cs-form { flex-direction: column; align-items: center; }
+    .fme-cs-form__input { width: 100%; }
+}
+@media screen and ( max-width: 480px ) {
+    .fme-cs-features { grid-template-columns: 1fr; }
+}
+
+/* ── Coming soon form button spinner ─────────────────── */
+.fme-cs-btn-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: fme-cs-spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 2px;
+}
+@keyframes fme-cs-spin {
+    to { transform: rotate(360deg); }
 }

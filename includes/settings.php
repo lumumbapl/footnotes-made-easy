@@ -63,10 +63,8 @@ $fme_version = get_plugin_data( plugin_dir_path( __FILE__ ) . '../footnotes-made
             <?php endif; ?>
         </button>
         <?php else : ?>
-        <a href="https://lumumbas-blog.co.ke/footnotes-made-easy-pro/"
-           class="fme-inner-tab fme-inner-tab--pro fme-inner-tab--link"
-           target="_blank"
-           rel="noopener noreferrer">
+        <a href="<?php echo esc_url( admin_url( 'admin.php?page=footnotes-pro' ) ); ?>"
+           class="fme-inner-tab fme-inner-tab--pro fme-inner-tab--link">
             <?php esc_html_e( 'Citations', 'footnotes-made-easy' ); ?>
             <span class="fme-pro-tab-badge">PRO</span>
         </a>

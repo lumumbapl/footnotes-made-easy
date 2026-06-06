@@ -2,7 +2,7 @@
 Contributors: lumiblog, dartiss, manuell, ocenchris
 Tags: bibliography, footnotes, formatting, reference
 Donate link: https://lumumbas-blog.co.ke/support-wp-plugins
-Requires at least: 4.6
+Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 3.2.0-beta.8
