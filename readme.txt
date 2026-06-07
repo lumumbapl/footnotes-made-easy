@@ -1,6 +1,6 @@
 === Footnotes Made Easy ===
 Contributors: lumiblog, dartiss, manuell, ocenchris
-Tags: bibliography, footnotes, formatting, reference
+Tags: footnotes, bibliography, formatting, reference, citations
 Donate link: https://lumumbas.blog/support-wp-plugins
 Requires at least: 6.0
 Tested up to: 7.0
@@ -9,69 +9,82 @@ Stable tag: 3.2.0-beta.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Allows post authors to easily add and manage footnotes in posts.
+Allows post authors to easily add and manage footnotes in posts and pages.
 
 == Description ==
 
-Footnotes Made Easy is a simple, but powerful, method of adding footnotes to your posts and pages.
+Footnotes Made Easy is a simple but powerful plugin for adding footnotes to your WordPress posts and pages. Wrap any text in double parentheses, and it becomes a footnote; automatically numbered, linked, and displayed at the bottom of your content.
 
-**Key features include...**
+**Full documentation is available at [docs.altvisewp.com/footnotes-made-easy](https://docs.altvisewp.com/footnotes-made-easy/)**
 
-* Simple footnote insertion via double parentheses
-* Combine identical notes
-* Solution for paginated posts
-* Suppress footnotes on specific page types and custom URLs
-* Option to display 'pretty' tooltips using jQuery
-* Exclude footnotes from specific post categories
+**Key features:**
+
+* Simple inline syntax — wrap text in `(( ))` to create a footnote anywhere in a post or page
+* Combine identical footnotes automatically
+* Paginated post support with manual start number control
+* Reference a previous footnote by number using `((ref:1))`
+* Pretty tooltips — show footnote content on hover using jQuery
+* Suppress footnotes on specific page types (home, archives, search, feeds)
+* Exclude footnotes from specific post categories or custom URLs
+* Dashboard with live usage stats; footnote counts across all posts and pages
+* Export/import Footnotes Made Easy settings across different sites
+* Multisite support; network-managed mode or per-subsite override
+* Compatible with the Classic Editor and the Gutenberg block editor
 * Lots of configuration options
-* Redesigned tabbed settings interface for easier navigation
-* Plugin usage stats on the About page (footnote counts across posts and pages)
-* Video tutorials built into the settings screen
-* And much, much more!
 
-**Footnotes Made Easy is a fork of [WP Footnotes](https://github.com/drzax/wp-footnotes "Github - wp-footnotes"), a plugin by Simon Elvery which was abandoned some years ago**.
+**Footnotes Made Easy is a fork of [WP Footnotes](https://github.com/drzax/wp-footnotes "Github - wp-footnotes"), a plugin by Simon Elvery.**
 
-**Please visit the [Github page](https://github.com/lumumbapl/footnotes-made-easy/ "Github") for the latest code development, planned enhancements and known issues**.
+**For the latest code, planned enhancements and known issues, visit the [GitHub page](https://github.com/lumumbapl/footnotes-made-easy/ "Github").**
 
 == Getting Started ==
 
 [youtube https://www.youtube.com/watch?v=LuXMb8Hz4tc]
 
-Creating a footnote is incredibly simple - you just need to include your footnote in double parentheses, such as this...
+Creating a footnote is simple; wrap your footnote text in double parentheses:
 
-This is a sentence ((and this is your footnote)).
+`This is a sentence ((and this is your footnote)).`
 
-The footnote will then appear at the bottom of your post/page.
+The footnote will appear at the bottom of your post or page, automatically numbered and linked.
 
-**Important note:** Make sure you include a space before your opening double parentheses or the footnote won't work!
+**Important:** Include a space before your opening double parentheses or the footnote will not work.
 
-== Options ==
+== Settings ==
 
-The settings page is organised into five tabs for easier navigation:
+The settings page is organised into four tabs:
 
-* **Display** — Control footnote identifier format, back-link style, header/footer text, and tooltip behaviour.
-* **Behaviour** — Configure footnote processing options such as combining identical notes and execution priority.
-* **Suppress** — Choose which page types (home, archives, search, feeds, previews) should not display footnotes.
-* **Advanced** — Exclude footnotes from specific URLs or post categories.
-* **About** — View plugin stats, version information, video tutorials, and links to documentation and support.
+* **Display** — Control footnote identifier style, back-link format, header and footer text, and tooltip behaviour.
+* **Behaviour** — Configure combining identical footnotes, back-link position, and processing priority.
+* **Suppress** — Choose which page types (home, archives, search, feeds, previews) should not display footnotes. Also suppress by post type and exclude footnotes from specific URLs or post categories
+* **Advanced** — Change the opening and closing delimiters.
 
 == Paginated Posts ==
 
-Some of you seem to like paginating posts, which is kind of problematic. By default, each page of your post will have its own set of footnotes at the bottom and the numbering will start again from 1 for each page.
+By default, each page of a paginated post restarts footnote numbering from 1. To maintain a continuous sequence, add a start number tag between each `<!--nextpage-->` marker:
 
-The only way to get around this is to know how many posts are on each page and tell Footnotes Made Easy what number you want the list to start at for each of the pages. So at some point on each page (that is, between each `<!--nextpage-->` tag) you need to add a tag to let the plugin know what number the footnotes on this page should start at. The tag should look like this `<!--startnum=5-->` where "5" is the number you want the footnotes for this page to start at.
+`<!--startnum=5-->`
+
+Replace `5` with the number you want the first footnote on that page to start at.
 
 == Referencing ==
 
-Sometimes it's useful to be able to refer to a previous footnote a second (or third, or fourth...) time. To do this, you can either simply insert the exact same text as you did the first time and the identifier should simply reference the previous note. Alternatively, if you don't want to do all that typing again, you can construct a footnote like this: `((ref:1))` and the identifier will reference the footnote with the given number.
+To reference a previous footnote a second time, you can either repeat the exact same text (recommended — works with the Combine Identical Footnotes option) or use the number reference syntax:
 
-Even though it's a little more typing, using the exact text method is much more robust. The number referencing will not work across multiple pages in a paged post (but will work within the page). Also, if you use the number referencing system you risk them identifying the incorrect footnote if you go back and insert a new footnote and forget to change the referenced number.
+`((ref:1))`
+
+Note: number referencing does not work across pages in a paginated post, and risks pointing to the wrong footnote if new footnotes are inserted before it. The exact-text method is more robust.
+
+== Multisite Support ==
+
+On WordPress multisite networks, the plugin can be configured from the network admin in two modes:
+
+* **Network managed** — all settings controlled centrally; the Footnotes menu is hidden from subsite admins
+* **Subsite override** — each subsite admin can manage their own footnote settings independently
 
 == Available in 8 Languages ==
 
-Footnotes Made Easy is fully internationalized, and ready for translations.
+Footnotes Made Easy is fully internationalised and ready for translation.
 
-**Many thanks to the following translators for their contributions:**
+**Thanks to the following translators:**
 
 * [David Artiss](https://profiles.wordpress.org/dartiss/), English (UK)
 * [Mark Robson](https://profiles.wordpress.org/markscottrobson/), English (UK)
@@ -85,44 +98,63 @@ Footnotes Made Easy is fully internationalized, and ready for translations.
 * [Pieterjan Deneys](https://profiles.wordpress.org/nekojonez/), Dutch (Belgium)
 * [Alex Grey](https://profiles.wordpress.org/alexvgrey/), Russian
 
-**If you would like to add a translation to this plugin then please head to our [Translating WordPress](https://translate.wordpress.org/projects/wp-plugins/footnotes-made-easy "Translating WordPress") page**
+**To add a translation, visit the [Translating WordPress](https://translate.wordpress.org/projects/wp-plugins/footnotes-made-easy "Translating WordPress") page.**
 
 == Installation ==
 
-Footnotes Made Easy can be found and installed via the Plugin menu within WordPress administration (Plugins -> Add New). Alternatively, it can be downloaded from WordPress.org and installed manually...
+Footnotes Made Easy can be found and installed via the Plugin menu within WordPress administration (Plugins → Add New). Alternatively, download from WordPress.org and install manually:
 
 1. Upload the entire `footnotes-made-easy` folder to your `wp-content/plugins/` directory.
-2. Activate the plugin through the 'Plugins' menu in WordPress administration.
+2. Activate the plugin through the Plugins menu in WordPress administration.
 
-Voila! It's ready to go.
+No configuration required — the plugin works immediately after activation with the default `(( ))` syntax.
 
 == Frequently Asked Questions ==
 
-= How do I add a footnote to my post or page? =
+= How do I add a footnote? =
 
-To add a footnote, surround the footnote text with the opening and closing footnote markers specified in the plugin settings. By default, these are `(( and ))`.
+Wrap your footnote text in double parentheses anywhere in your post or page content:
 
-= Other than the available options, can the footnotes output be styled? =
+`This is a sentence ((and this is your footnote)).`
 
-Yes, it can. The easiest way is to use the CSS editor in your theme customizer. For example, 'ol.footnotes' refers to the footnotes list in general and 'ol.footnotes li' the individual footnotes.
+The plugin replaces the marker with a numbered superscript and appends the reference at the bottom of the post.
 
-= Can I disable footnotes on specific parts of my website? =
+= Can I change the `(( ))` syntax to something else? =
 
-Yes. The Suppress tab lets you disable footnotes on the home page, archives, search results, feeds, and previews. The Advanced tab lets you exclude footnotes from specific URLs or post categories.
+Yes. Go to **Footnotes → Footnotes Settings → Advanced** and set custom opening and closing delimiters.
+
+= Can I style the footnotes output? =
+
+Yes. Use the CSS editor in your theme customiser. `ol.footnotes` targets the footnotes list and `ol.footnotes li` targets individual footnotes.
+
+= Can I disable footnotes on specific pages or categories? =
+
+Yes. The **Suppress** tab lets you disable footnotes on the home page, archives, search results, feeds, and previews. The **Advanced** tab lets you exclude specific URLs or post categories.
+
+= Does the plugin work with the block editor (Gutenberg)? =
+
+Yes. Add the `(( ))` syntax directly inside any text block.
+
+= Does the plugin work on multisite? =
+
+Yes. See the Multisite section above for configuration details.
 
 = Does the plugin remove its data when uninstalled? =
 
-Yes. Deleting the plugin via the WordPress admin removes all stored settings and user meta from the database — nothing is left behind.
+Yes. Deleting the plugin via the WordPress admin removes all stored settings and user meta from the database. If you want to preserve settings for a future reinstall, enable the **Preserve settings on uninstall** option in the Tools page before deleting.
+
+= Where can I find the full documentation? =
+
+Full documentation is at [docs.altvisewp.com/footnotes-made-easy](https://docs.altvisewp.com/footnotes-made-easy/).
 
 == Screenshots ==
 
-1. The redesigned tabbed settings interface — Display tab
-2. The Behaviour and Suppress settings tabs
-3. The Advanced tab for URL and category exclusions
-4. The About tab showing plugin stats, version status, and video tutorials
-5. The post editor showing how to insert footnotes
-6. Live preview of a post showing footnotes within the page
-7. Live preview of a post showing the footnote list at the bottom
+1. Preview showing footnotes on a page
+2. List at the bottom of the page
+3. Behaviour settings
+4. Display settings
+5. Exclude specific URLs
+6. Export/import footnote settings
 
 == Changelog ==
 
@@ -145,23 +177,22 @@ I use semantic versioning, with the first release being 1.0.
 * Fix: [Restored 'footnote-link' CSS class](https://wordpress.org/support/topic/custom-css-not-working-anymore-3/) for backward compatibility with custom CSS.
 
 = 3.0.8 [November 2, 2025] =
-* CRITICAL SECURITY FIX: CVE-2025-11733 - Fixed unauthenticated stored XSS vulnerability (CVSS 7.2)
+* CRITICAL SECURITY FIX: CVE-2025-11733 — Fixed unauthenticated stored XSS vulnerability (CVSS 7.2)
 * Security: Complete security overhaul with 5-layer protection
-* Security: Proper authentication, CSRF protection, input sanitization, and output escaping
+* Security: Proper authentication, CSRF protection, input sanitisation, and output escaping
 * Fix: 32 output escaping issues resolved
 * Fix: 18 translation strings corrected
-* Fix: All code now complies with WordPress standards
-* Performance: 20-30% faster page loads with optimized resource loading
-* Enhancement: Professional settings page footer
+* Fix: All code now complies with WordPress coding standards
+* Performance: 20–30% faster page loads with optimised resource loading
 * Compatibility: WordPress 6.8 and PHP 8.4
 * Quality: Zero Plugin Check errors or warnings
 
 = 3.0.7 [August 9, 2025] =
-* Fix: PHP 8.4 Compatibility issue.
-* WordPress 6.8 Compatibility Test
+* Fix: PHP 8.4 compatibility issue
+* Compatibility: WordPress 6.8 compatibility test passed
 
 = 3.0.6 [February 2, 2025] =
-* Fix: PHP 8.2 Compatibility issue.
+* Fix: PHP 8.2 compatibility issue
 
 == Upgrade Notice ==
 
