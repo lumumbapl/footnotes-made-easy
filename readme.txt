@@ -1,7 +1,7 @@
 === Footnotes Made Easy ===
 Contributors: lumiblog, dartiss, manuell, ocenchris
 Tags: bibliography, footnotes, formatting, reference
-Donate link: https://lumumbas-blog.co.ke/support-wp-plugins
+Donate link: https://lumumbas.blog/support-wp-plugins
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
@@ -128,14 +128,14 @@ Yes. Deleting the plugin via the WordPress admin removes all stored settings and
 
 I use semantic versioning, with the first release being 1.0.
 
-= 3.2.0 [April 2026] =
-* Enhancement: Fully redesigned tabbed settings interface (Display, Behaviour, Suppress, Advanced, About)
-* Enhancement: About tab with live plugin usage stats (footnote counts across posts and pages)
-* Enhancement: WordPress and plugin version status shown on the About tab with one-click update prompts
-* Enhancement: Video tutorials section embedded in the About tab
-* Enhancement: Quick-links to Documentation, Support forum, and GitHub repository on the About tab
-* Enhancement: Rating banner to encourage reviews, with snooze and dismiss options
-* Fix: uninstall.php now removes all plugin data including user meta (fme_rating_banner, fme_banner_seeded_version)
+= 3.2.0 [June 12, 2026] =
+* New: Fully redesigned admin UI with a dedicated top-level Footnotes menu (Dashboard, Footnotes Settings, Tools, and so much more)
+* New: Dashboard page with live plugin usage statistics — footnote counts across all posts and pages
+* New: Tabbed settings interface — Display, Behaviour, Suppress, and Advanced tabs
+* New: Tools page with settings export and import (JSON), factory reset, and preserve-on-uninstall option
+* New: Get Help page with documentation, support forum, and bug report quick links
+* New: Multisite support — network-managed mode and per-subsite override mode, configurable from network admin
+* Enhancement: Suppress footnotes by post categories and by specific URL list
 
 = 3.1.0 [November 29, 2025] =
 * Compatibility: WordPress 6.9 compatibility test passed
@@ -166,4 +166,4 @@ I use semantic versioning, with the first release being 1.0.
 == Upgrade Notice ==
 
 = 3.2.0 =
-* Redesigned settings UI with tabbed navigation, an About tab with live stats and video tutorials, and a complete uninstall cleanup fix.
+* Major release. Fully redesigned admin UI, new Dashboard, Tools, and Get Help pages, multisite support, and a new method of suppressing footnotes.

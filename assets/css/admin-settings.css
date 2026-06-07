@@ -104,10 +104,11 @@
     flex-shrink: 0;
 }
 
-.fme-topbar-icon svg {
+.fme-topbar-icon img {
     width: 16px !important;
     height: 16px !important;
-    fill: #fff;
+    object-fit: contain;
+    display: block;
 }
 
 .fme-topbar-name {
