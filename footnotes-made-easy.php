@@ -220,7 +220,7 @@ add_action( 'wp_ajax_fme_record_waitlist', function (): void {
 
 
 // Inject admin CSS for full-width purple Upgrade to Pro menu item
-function fme_pro_menu_css() {
+function fme_pro_menu_css() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Legacy function name, renaming would break existing installations.
     if ( defined( 'FME_PRO_VERSION' ) || ! swas_wp_footnotes::show_upsell() ) return;
     echo '<style>
 #adminmenu a[href="admin.php?page=footnotes-pro"] {
@@ -642,10 +642,19 @@ class swas_wp_footnotes {
 		// Display footnotes
 
 		$start = ( $start_number !== 1 ) ? 'start="' . $start_number . '" ' : '';
-		
+
+		// Re-fetch pre_footnotes and post_footnotes directly from get_option() rather than
+		// reading from the cached $this->current_options. This allows WPML (and any other
+		// plugin that filters option_swas_footnote_options) to return the correct translated
+		// value for the active language at the point of output, rather than the value that
+		// was cached at construction time before the language context was fully established.
+		$fme_options_live = get_option( 'swas_footnote_options', array() );
+		$pre_footnotes    = isset( $fme_options_live['pre_footnotes'] ) ? $fme_options_live['pre_footnotes'] : $this->current_options['pre_footnotes'];
+		$post_footnotes   = isset( $fme_options_live['post_footnotes'] ) ? $fme_options_live['post_footnotes'] : $this->current_options['post_footnotes'];
+
 		// SECURITY FIX: Escape output to prevent XSS
-		$footnotes_markup = wp_kses_post( $this->current_options[ 'pre_footnotes' ] );
-		
+		$footnotes_markup = wp_kses_post( $pre_footnotes );
+
 		$footnotes_markup = $footnotes_markup . '<ol ' . $start . 'class="footnotes">';
 
 		foreach ( $footnotes as $key => $value ) {
@@ -678,7 +687,7 @@ class swas_wp_footnotes {
 		}
 		
 		// SECURITY FIX: Escape output to prevent XSS
-		$footnotes_markup = $footnotes_markup . '</ol>' . wp_kses_post( $this->current_options[ 'post_footnotes' ] );
+		$footnotes_markup = $footnotes_markup . '</ol>' . wp_kses_post( $post_footnotes );
 
 		if ( $display ) {
 			$data = $data . $footnotes_markup;
