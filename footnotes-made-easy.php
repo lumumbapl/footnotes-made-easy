@@ -391,9 +391,14 @@ class swas_wp_footnotes {
         $footnotes_options[ 'post_identifier' ] = sanitize_text_field( $post_array[ 'post_identifier' ] );
         $footnotes_options[ 'list_style_symbol' ] = sanitize_text_field( $post_array[ 'list_style_symbol' ] );
         
-        // SECURITY FIX: Sanitize HTML content fields to prevent XSS
-        $footnotes_options[ 'pre_footnotes' ] = wp_kses_post( $post_array[ 'pre_footnotes' ] );
-        $footnotes_options[ 'post_footnotes' ] = wp_kses_post( $post_array[ 'post_footnotes' ] );
+        // SECURITY FIX: Sanitize HTML content fields to prevent XSS.
+        // html_entity_decode() is applied before wp_kses_post() to prevent double-encoding on
+        // repeated saves. esc_textarea() encodes < and > for display in the textarea; without
+        // decoding first, each save would re-encode the already-encoded entities
+        // (e.g. <h2> → &lt;h2&gt; → &amp;lt;h2&amp;gt;). wp_kses_post() then strips any
+        // disallowed tags from the decoded value, keeping the sanitization intact.
+        $footnotes_options[ 'pre_footnotes' ]  = wp_kses_post( html_entity_decode( wp_unslash( $post_array[ 'pre_footnotes' ] ), ENT_QUOTES, 'UTF-8' ) );
+        $footnotes_options[ 'post_footnotes' ] = wp_kses_post( html_entity_decode( wp_unslash( $post_array[ 'post_footnotes' ] ), ENT_QUOTES, 'UTF-8' ) );
         
         $footnotes_options[ 'no_display_home' ] = ( array_key_exists( 'no_display_home', $post_array ) ) ? true : false;
         $footnotes_options[ 'no_display_preview' ] = ( array_key_exists( 'no_display_preview', $post_array) ) ? true : false;
@@ -742,12 +747,9 @@ class swas_wp_footnotes {
 				$this->current_options[ $key ] = $value;
 			}
 		}
-		$new_setting = array();
-		foreach ( $this->current_options as $key=>$setting ) {
-			$new_setting[ $key ] = htmlentities( $setting );
-		}
-		$this->current_options = $new_setting;
-		unset( $new_setting );
+		// Do not pre-encode options here. Template functions (esc_textarea, esc_attr) handle
+		// escaping at the point of output; running htmlentities() here causes double-encoding
+		// of HTML fields like pre_footnotes / post_footnotes.
 		include( dirname( __FILE__ ) . '/includes/settings.php' );
 	}
 
@@ -1037,12 +1039,7 @@ class swas_wp_footnotes {
 				$this->current_options[ $key ] = $value;
 			}
 		}
-		$new_setting = array();
-		foreach ( $this->current_options as $key => $setting ) {
-			$new_setting[ $key ] = htmlentities( $setting );
-		}
-		$this->current_options = $new_setting;
-		unset( $new_setting );
+		// Do not pre-encode options here — same reason as footnotes_options_page().
 		include( dirname( __FILE__ ) . '/includes/dashboard.php' );
 	}
 
