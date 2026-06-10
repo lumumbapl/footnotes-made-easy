@@ -136,6 +136,22 @@ $fme_version = get_plugin_data( plugin_dir_path( __FILE__ ) . '../footnotes-made
                                     <p class="description"><?php /* translators: %s: example back-link character (↩) */ echo esc_html( sprintf( __( 'Affects how back-links after each footnote look. A good character is %s. Leave all blank to remove back-links.', 'footnotes-made-easy' ), '↩' ) ); ?></p>
                                 </td>
                             </tr>
+                            <tr>
+                                <th><?php esc_html_e( 'Back-link position', 'footnotes-made-easy' ); ?></th>
+                                <td>
+                                    <label style="display:inline-flex;align-items:center;gap:0.4em;margin-right:1.2em;">
+                                        <input type="radio" name="backlink_position" value="end"
+                                               <?php checked( ( $this->current_options['backlink_position'] ?? 'end' ), 'end' ); ?> />
+                                        <?php esc_html_e( 'End of footnote', 'footnotes-made-easy' ); ?>
+                                    </label>
+                                    <label style="display:inline-flex;align-items:center;gap:0.4em;">
+                                        <input type="radio" name="backlink_position" value="start"
+                                               <?php checked( ( $this->current_options['backlink_position'] ?? 'end' ), 'start' ); ?> />
+                                        <?php esc_html_e( 'Beginning of footnote', 'footnotes-made-easy' ); ?>
+                                    </label>
+                                    <p class="description"><?php esc_html_e( 'Where the back-link appears relative to each footnote\'s text.', 'footnotes-made-easy' ); ?></p>
+                                </td>
+                            </tr>
                         </table>
                     </div>
 

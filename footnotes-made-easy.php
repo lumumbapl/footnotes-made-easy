@@ -276,6 +276,7 @@ class swas_wp_footnotes {
             'pre_backlink' => ' [',
             'backlink' => '&#8617;',
             'post_backlink' => ']',
+            'backlink_position' => 'end',
             'pre_identifier' => '',
             'inner_pre_identifier' => '',
             'list_style_type' => 'decimal',
@@ -384,6 +385,7 @@ class swas_wp_footnotes {
         $footnotes_options[ 'pre_backlink' ] = sanitize_text_field( $post_array[ 'pre_backlink' ] );
         $footnotes_options[ 'backlink' ] = sanitize_text_field( $post_array[ 'backlink' ] );
         $footnotes_options[ 'post_backlink' ] = sanitize_text_field( $post_array[ 'post_backlink' ] );
+        $footnotes_options[ 'backlink_position' ] = ( isset( $post_array[ 'backlink_position' ] ) && 'start' === $post_array[ 'backlink_position' ] ) ? 'start' : 'end';
         $footnotes_options[ 'pre_identifier' ] = sanitize_text_field( $post_array[ 'pre_identifier' ] );
         $footnotes_options[ 'inner_pre_identifier' ] = sanitize_text_field( $post_array[ 'inner_pre_identifier' ] );
         $footnotes_options[ 'list_style_type' ] = sanitize_text_field( $post_array[ 'list_style_type' ] );
@@ -655,12 +657,23 @@ class swas_wp_footnotes {
 			if ( 'symbol' === $style ) {
 				$footnotes_markup = $footnotes_markup . esc_html( $value[ 'symbol' ] ) . ' ';
 			}
-			$footnotes_markup = $footnotes_markup . wp_kses_post( $value[ 'text' ] );
+
+			// Build back-link HTML (empty string on feeds, or when all backlink fields are blank)
+			$backlinks_html = '';
 			if ( ! is_feed() ) {
 				foreach ( $value[ 'identifiers' ] as $identifier ) {
-					$footnotes_markup = $footnotes_markup . '<span class="footnote-back-link-wrapper">' . esc_html( $this->current_options[ 'pre_backlink' ] ) . '<a href="' . esc_url( ( ( $use_full_link ) ? get_permalink( $post->ID ) : '' ) . '#identifier_' . ( $identifier + 1 ) . '_' . $post->ID ) . '" class="footnote-link footnote-back-link">' . esc_html( $this->current_options[ 'backlink' ] ) . '</a>' . esc_html( $this->current_options[ 'post_backlink' ] ) . '</span>';
+					$backlinks_html .= '<span class="footnote-back-link-wrapper">' . esc_html( $this->current_options[ 'pre_backlink' ] ) . '<a href="' . esc_url( ( ( $use_full_link ) ? get_permalink( $post->ID ) : '' ) . '#identifier_' . ( $identifier + 1 ) . '_' . $post->ID ) . '" class="footnote-link footnote-back-link">' . esc_html( $this->current_options[ 'backlink' ] ) . '</a>' . esc_html( $this->current_options[ 'post_backlink' ] ) . '</span>';
 				}
 			}
+
+			$backlink_position = isset( $this->current_options[ 'backlink_position' ] ) ? $this->current_options[ 'backlink_position' ] : 'end';
+
+			if ( 'start' === $backlink_position ) {
+				$footnotes_markup = $footnotes_markup . $backlinks_html . ' ' . wp_kses_post( $value[ 'text' ] );
+			} else {
+				$footnotes_markup = $footnotes_markup . wp_kses_post( $value[ 'text' ] ) . $backlinks_html;
+			}
+
 			$footnotes_markup = $footnotes_markup . '</li>';
 		}
 		

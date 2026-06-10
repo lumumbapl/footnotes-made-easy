@@ -109,6 +109,25 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
                             </div>
                         </div>
                     </div>
+
+                    <div class="fme-field-row">
+                        <div class="fme-field-label">
+                            <?php esc_html_e( 'Back-link position', 'footnotes-made-easy' ); ?>
+                            <div class="fme-field-hint"><?php esc_html_e( 'Where the back-link appears relative to each footnote\'s text.', 'footnotes-made-easy' ); ?></div>
+                        </div>
+                        <div class="fme-field-input">
+                            <label style="display:inline-flex;align-items:center;gap:0.4em;margin-right:1.2em;">
+                                <input type="radio" name="backlink_position" value="end"
+                                       <?php checked( ( $this->current_options['backlink_position'] ?? 'end' ), 'end' ); ?> />
+                                <?php esc_html_e( 'End of footnote', 'footnotes-made-easy' ); ?>
+                            </label>
+                            <label style="display:inline-flex;align-items:center;gap:0.4em;">
+                                <input type="radio" name="backlink_position" value="start"
+                                       <?php checked( ( $this->current_options['backlink_position'] ?? 'end' ), 'start' ); ?> />
+                                <?php esc_html_e( 'Beginning of footnote', 'footnotes-made-easy' ); ?>
+                            </label>
+                        </div>
+                    </div>
                 </div><!-- /.fme-card -->
 
                 <!-- Card: Header & Footer -->

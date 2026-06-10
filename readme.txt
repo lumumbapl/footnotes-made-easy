@@ -169,6 +169,7 @@ I use semantic versioning, with the first release being 1.0.
 * New: Multisite support — network-managed mode and per-subsite override mode, configurable from network admin
 * Enhancement: Suppress footnotes by post categories and by specific URL list
 * Fix: HTML in the Footnotes Header and Footer fields (e.g. `<h2>References</h2>`) was being double-encoded on save, causing `&lt;h2&gt;` to appear in the textarea on subsequent edits. Removed a redundant `htmlentities()` pass that was applied to all options before rendering the settings page — output escaping is handled correctly by `esc_textarea()` and `esc_attr()` at the point of output. See [#39](https://github.com/altvisewp/footnotes-made-easy/issues/39).
+* Enhancement: New Back-link position setting in Display → Back-links. Choose whether the back-link appears at the end (default, existing behaviour) or the beginning of each footnote. Closes [#5](https://github.com/altvisewp/footnotes-made-easy/issues/5).
 
 = 3.1.0 [November 29, 2025] =
 * Compatibility: WordPress 6.9 compatibility test passed
