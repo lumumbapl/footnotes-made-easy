@@ -57,7 +57,7 @@ foreach ( $fme_all_content as $fme_pid ) {
             <?php endif; ?>
         </div>
         <div class="fme-topbar-links">
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=footnotes-help' ) ); ?>"><?php esc_html_e( 'Help', 'footnotes-made-easy' ); ?></a>
+            <a href="<?php echo esc_url( swas_wp_footnotes::get_admin_page_url( 'footnotes-help' ) ); ?>"><?php esc_html_e( 'Help', 'footnotes-made-easy' ); ?></a>
             <a href="https://docs.altvisewp.com/footnotes-made-easy/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Docs', 'footnotes-made-easy' ); ?></a>
         </div>
     </div>
@@ -78,7 +78,7 @@ foreach ( $fme_all_content as $fme_pid ) {
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 4.5l4 2.5-4 2.5V4.5z" fill="currentColor"/></svg>
                             <?php esc_html_e( 'Watch Video', 'footnotes-made-easy' ); ?>
                         </button>
-                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=footnotes-settings' ) ); ?>" class="fme-welcome__btn-settings">
+                        <a href="<?php echo esc_url( swas_wp_footnotes::get_admin_page_url( 'footnotes-settings' ) ); ?>" class="fme-welcome__btn-settings">
                             <?php esc_html_e( 'Open Settings', 'footnotes-made-easy' ); ?>
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </a>
@@ -160,7 +160,7 @@ foreach ( $fme_all_content as $fme_pid ) {
                         </p>
                     </div>
                     <p style="font-size:12px;color:#8c8f94;margin:10px 0 0;font-style:italic;">
-                        <?php /* translators: %s: link to Settings → Advanced page */ printf( esc_html__( 'The opening and closing tags can be changed on the %s page.', 'footnotes-made-easy' ), '<a href="' . esc_url( admin_url( 'admin.php?page=footnotes-settings#advanced' ) ) . '">' . esc_html__( 'Settings → Advanced', 'footnotes-made-easy' ) . '</a>' ); ?>
+                        <?php /* translators: %s: link to Settings → Advanced page */ printf( esc_html__( 'The opening and closing tags can be changed on the %s page.', 'footnotes-made-easy' ), '<a href="' . esc_url( swas_wp_footnotes::get_admin_page_url( 'footnotes-settings#advanced' ) ) . '">' . esc_html__( 'Settings → Advanced', 'footnotes-made-easy' ) . '</a>' ); ?>
                     </p>
                 </div>
             </div>

@@ -220,29 +220,7 @@ add_action( 'wp_ajax_fme_record_waitlist', function (): void {
 
 
 // Inject admin CSS for full-width purple Upgrade to Pro menu item
-add_action( 'admin_head', function () {
-    if ( defined( 'FME_PRO_VERSION' ) || ! swas_wp_footnotes::show_upsell() ) return;
-    echo '<style>
-#adminmenu a[href="admin.php?page=footnotes-pro"] {
-    background: #534AB7 !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-    margin: 4px 0 2px !important;
-    border-radius: 0 !important;
-}
-#adminmenu a[href="admin.php?page=footnotes-pro"]:hover {
-    background: #433aa0 !important;
-    color: #fff !important;
-}
-#adminmenu a[href="admin.php?page=footnotes-pro"].current,
-#adminmenu li.current a[href="admin.php?page=footnotes-pro"] {
-    background: #433aa0 !important;
-    color: #fff !important;
-}
-</style>';
-} );
-// Inject admin CSS for full-width purple Upgrade to Pro menu item
-add_action( 'admin_head', function () {
+function fme_pro_menu_css() {
     if ( defined( 'FME_PRO_VERSION' ) || ! swas_wp_footnotes::show_upsell() ) return;
     echo '<style>
 #adminmenu a[href="admin.php?page=footnotes-pro"] {
@@ -253,11 +231,16 @@ add_action( 'admin_head', function () {
     border-radius: 0 !important;
 }
 #adminmenu a[href="admin.php?page=footnotes-pro"]:hover,
+#adminmenu a[href="admin.php?page=footnotes-pro"].current,
 #adminmenu li.current a[href="admin.php?page=footnotes-pro"] {
     background: #433aa0 !important;
     color: #fff !important;
 }
 </style>';
+}
+add_action( 'admin_head', 'fme_pro_menu_css' );
+add_action( 'network_admin_menu', function () {
+    add_action( 'admin_head', 'fme_pro_menu_css' );
 } );
 
 $swas_wp_footnotes = new swas_wp_footnotes(); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
@@ -541,6 +524,19 @@ class swas_wp_footnotes {
 			return $data;
 		}
 
+		// Protect <script> blocks — replace them with placeholders so footnote
+		// tags inside JS code are never processed. Restored at the end.
+		$script_blocks = array();
+		$data = preg_replace_callback(
+			'|<script[^>]*>.*?</script>|is',
+			function( $matches ) use ( &$script_blocks ) {
+				$placeholder = '<!--FME_SCRIPT_' . count( $script_blocks ) . '-->';
+				$script_blocks[] = $matches[0];
+				return $placeholder;
+			},
+			$data
+		);
+
 		// Check for and setup the starting number
 
 		$start_number = ( 1 === preg_match( "|<!\-\-startnum=(\d+)\-\->|", $data,$start_number_array ) ) ? $start_number_array[ 1 ] : 1;
@@ -548,6 +544,12 @@ class swas_wp_footnotes {
 		// Regex extraction of all footnotes (or return if there are none)
 
 		if ( ! preg_match_all( "/(" . preg_quote( $this->current_options[ 'footnotes_open' ], "/" ) . ")(.*)(" . preg_quote( $this->current_options[ 'footnotes_close' ], "/" ) . ")/Us", $data, $identifiers, PREG_SET_ORDER ) ) {
+			// Restore script blocks before early return
+			if ( ! empty( $script_blocks ) ) {
+				foreach ( $script_blocks as $index => $script ) {
+					$data = str_replace( '<!--FME_SCRIPT_' . $index . '-->', $script, $data );
+				}
+			}
 			return $data;
 		}
 
@@ -662,6 +664,13 @@ class swas_wp_footnotes {
 
 		if ( $display ) {
 			$data = $data . $footnotes_markup;
+		}
+
+		// Restore any <script> blocks that were protected at the start
+		if ( ! empty( $script_blocks ) ) {
+			foreach ( $script_blocks as $index => $script ) {
+				$data = str_replace( '<!--FME_SCRIPT_' . $index . '-->', $script, $data );
+			}
 		}
 
 		return $data;
@@ -785,6 +794,21 @@ class swas_wp_footnotes {
      */
     public static function is_network_admin(): bool {
         return is_multisite() && is_super_admin();
+    }
+
+    /**
+     * Get the correct URL for a plugin admin page, accounting for network admin.
+     * In the network admin, uses network_admin_url(); otherwise admin_url().
+     *
+     * @param string    $page         The page slug (e.g. 'footnotes-pro').
+     * @param bool|null $force_network Optional. Force network (true) or subsite (false) context.
+     *                                 When null, auto-detects via is_network_admin().
+     * @return string The full admin URL.
+     */
+    public static function get_admin_page_url( string $page, ?bool $force_network = null ): string {
+        $path       = 'admin.php?page=' . $page;
+        $is_network = ( null !== $force_network ) ? $force_network : is_network_admin();
+        return $is_network ? network_admin_url( $path ) : admin_url( $path );
     }
 
     /**
@@ -942,6 +966,18 @@ class swas_wp_footnotes {
 			'footnotes-help',
 			array( $this, 'footnotes_help_page' )
 		);
+
+		// Pro Coming Soon — only shown when Pro is not installed
+		if ( ! defined( 'FME_PRO_VERSION' ) && swas_wp_footnotes::show_upsell() ) {
+			add_submenu_page(
+				'footnotes-made-easy',
+				__( 'Upgrade to Pro', 'footnotes-made-easy' ),
+				'<span style="display:flex;align-items:center;gap:6px;">✦ ' . esc_html__( 'Upgrade to Pro', 'footnotes-made-easy' ) . '</span>',
+				'manage_network_options',
+				'footnotes-pro',
+				array( $this, 'footnotes_pro_page' )
+			);
+		}
 	}
 
 	function add_secondary_menu_pages() {
@@ -1210,7 +1246,8 @@ class swas_wp_footnotes {
 			wp_die( esc_html__( 'Insufficient permissions.', 'footnotes-made-easy' ) );
 		}
 
-		$redirect_base = admin_url( 'admin.php?page=footnotes-tools' );
+		$fme_is_network = isset( $_POST['fme_network'] ) && '1' === $_POST['fme_network'];
+		$redirect_base = self::get_admin_page_url( 'footnotes-tools', $fme_is_network );
 
 		// Check file was uploaded
 		if ( empty( $_FILES['fme_import_file']['tmp_name'] ) ) {
@@ -1300,7 +1337,8 @@ class swas_wp_footnotes {
 		if ( defined( 'FME_PRO_VERSION' ) ) {
 			delete_option( 'fme_pro_citation_style' );
 		}
-		wp_safe_redirect( admin_url( 'admin.php?page=footnotes-tools&reset=1' ) );
+		$fme_is_network = isset( $_POST['fme_network'] ) && '1' === $_POST['fme_network'];
+		wp_safe_redirect( self::get_admin_page_url( 'footnotes-tools', $fme_is_network ) . '&reset=1' );
 		exit;
 	}
 
@@ -1314,7 +1352,8 @@ class swas_wp_footnotes {
 		}
 		$preserve = isset( $_POST['fme_preserve_settings'] ) ? '1' : '0';
 		update_option( 'fme_preserve_settings_on_uninstall', $preserve );
-		wp_safe_redirect( admin_url( 'admin.php?page=footnotes-tools&preserve_saved=1' ) );
+		$fme_is_network = isset( $_POST['fme_network'] ) && '1' === $_POST['fme_network'];
+		wp_safe_redirect( self::get_admin_page_url( 'footnotes-tools', $fme_is_network ) . '&preserve_saved=1' );
 		exit;
 	}
 

@@ -45,7 +45,7 @@ if (
             <?php endif; ?>
         </div>
         <div class="fme-topbar-links">
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=footnotes-help' ) ); ?>"><?php esc_html_e( 'Help', 'footnotes-made-easy' ); ?></a>
+            <a href="<?php echo esc_url( swas_wp_footnotes::get_admin_page_url( 'footnotes-help' ) ); ?>"><?php esc_html_e( 'Help', 'footnotes-made-easy' ); ?></a>
             <a href="https://docs.altvisewp.com/footnotes-made-easy/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Docs', 'footnotes-made-easy' ); ?></a>
         </div>
     </div>
@@ -129,6 +129,7 @@ if (
                             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                                 <?php wp_nonce_field( 'fme_export_settings_nonce', 'fme_export_settings_nonce' ); ?>
                                 <input type="hidden" name="action" value="fme_export_settings">
+                                <input type="hidden" name="fme_network" value="<?php echo is_network_admin() ? '1' : '0'; ?>">
                                 <button type="submit" class="button">
                                     <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" style="margin-right:4px;vertical-align:middle;"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
                                     <?php esc_html_e( 'Download settings file', 'footnotes-made-easy' ); ?>
@@ -149,6 +150,7 @@ if (
                                   id="fme-import-form">
                                 <?php wp_nonce_field( 'fme_import_settings_nonce', 'fme_import_settings_nonce' ); ?>
                                 <input type="hidden" name="action" value="fme_import_settings">
+                                <input type="hidden" name="fme_network" value="<?php echo is_network_admin() ? '1' : '0'; ?>">
                                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                                     <input type="file"
                                            name="fme_import_file"
@@ -203,6 +205,7 @@ if (
                             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="fme-reset-form">
                                 <?php wp_nonce_field( 'fme_reset_settings_nonce', 'fme_reset_settings_nonce' ); ?>
                                 <input type="hidden" name="action" value="fme_reset_settings">
+                                <input type="hidden" name="fme_network" value="<?php echo is_network_admin() ? '1' : '0'; ?>">
                                 <button type="button" class="button fme-reset-btn" id="fme-reset-trigger">
                                     <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
                                     <?php esc_html_e( 'Reset to defaults', 'footnotes-made-easy' ); ?>
@@ -242,6 +245,7 @@ if (
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                     <?php wp_nonce_field( 'fme_preserve_settings_nonce', 'fme_preserve_settings_nonce' ); ?>
                     <input type="hidden" name="action" value="fme_save_preserve_settings">
+                    <input type="hidden" name="fme_network" value="<?php echo is_network_admin() ? '1' : '0'; ?>">
                     <table class="fme-form-table">
                         <tr>
                             <th>

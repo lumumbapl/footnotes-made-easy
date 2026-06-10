@@ -31,7 +31,7 @@ $fme_already_signed = (bool) get_user_meta( $fme_current_user->ID, 'fme_pro_wait
             <?php endif; ?>
         </div>
         <div class="fme-topbar-links">
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=footnotes-help' ) ); ?>"><?php esc_html_e( 'Help', 'footnotes-made-easy' ); ?></a>
+            <a href="<?php echo esc_url( swas_wp_footnotes::get_admin_page_url( 'footnotes-help' ) ); ?>"><?php esc_html_e( 'Help', 'footnotes-made-easy' ); ?></a>
             <a href="https://altvisewp.com/docs/plugins/footnotes-made-easy/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Docs', 'footnotes-made-easy' ); ?></a>
         </div>
     </div>

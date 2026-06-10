@@ -31,7 +31,7 @@ $fme_show_upsell = class_exists( 'swas_wp_footnotes' ) ? swas_wp_footnotes::show
             <?php endif; ?>
         </div>
         <div class="fme-topbar-links">
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=footnotes-help' ) ); ?>"><?php esc_html_e( 'Help', 'footnotes-made-easy' ); ?></a>
+            <a href="<?php echo esc_url( swas_wp_footnotes::get_admin_page_url( 'footnotes-help' ) ); ?>"><?php esc_html_e( 'Help', 'footnotes-made-easy' ); ?></a>
             <a href="https://docs.altvisewp.com/footnotes-made-easy/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Docs', 'footnotes-made-easy' ); ?></a>
         </div>
     </div>
@@ -137,7 +137,7 @@ $fme_show_upsell = class_exists( 'swas_wp_footnotes' ) ? swas_wp_footnotes::show
                         <p class="fme-help-pro-card__desc"><?php esc_html_e( 'Manage all footnotes from the editor sidebar without leaving the post.', 'footnotes-made-easy' ); ?></p>
                     </div>
                 </div>
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=footnotes-pro' ) ); ?>" class="button button-primary fme-help-pro-cta">
+                <a href="<?php echo esc_url( swas_wp_footnotes::get_admin_page_url( 'footnotes-pro' ) ); ?>" class="button button-primary fme-help-pro-cta">
                     <?php esc_html_e( 'Upgrade to Footnotes Made Easy Pro', 'footnotes-made-easy' ); ?> →
                 </a>
             </div>
