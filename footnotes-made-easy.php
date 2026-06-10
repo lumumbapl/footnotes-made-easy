@@ -131,7 +131,7 @@ function fme_enqueue_deactivation_survey( string $hook ): void { // phpcs:ignore
         'pluginVersion' => $plugin_version,
         'wpVersion'     => get_bloginfo( 'version' ),
         'phpVersion'    => PHP_VERSION,
-        'endpoint'      => 'https://analytics.checkoutpress.co/wp-json/altvise/v1/deactivation-feedback',
+        'endpoint'      => 'https://analytics.altvisewp.com/wp-json/altvisewp/v1/deactivation-feedback',
     ] );
 }
 add_action( 'admin_enqueue_scripts', 'fme_enqueue_deactivation_survey' );
