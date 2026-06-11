@@ -162,14 +162,14 @@ $fme_version = get_plugin_data( plugin_dir_path( __FILE__ ) . '../footnotes-made
                                 <th><?php esc_html_e( 'Header text', 'footnotes-made-easy' ); ?></th>
                                 <td>
                                     <textarea name="pre_footnotes" rows="3"><?php echo esc_textarea( $this->current_options['pre_footnotes'] ); ?></textarea>
-                                    <p class="description"><?php esc_html_e( 'Content displayed before the footnotes at the bottom of the post.', 'footnotes-made-easy' ); ?></p>
+                                    <p class="description"><?php esc_html_e( 'Content displayed before the footnotes at the bottom of the post. Accepts HTML, including heading tags — e.g. <h3>References</h3> for a styled heading.', 'footnotes-made-easy' ); ?></p>
                                 </td>
                             </tr>
                             <tr>
                                 <th><?php esc_html_e( 'Footer text', 'footnotes-made-easy' ); ?></th>
                                 <td>
                                     <textarea name="post_footnotes" rows="3"><?php echo esc_textarea( $this->current_options['post_footnotes'] ); ?></textarea>
-                                    <p class="description"><?php esc_html_e( 'Content displayed after the footnotes at the bottom of the post.', 'footnotes-made-easy' ); ?></p>
+                                    <p class="description"><?php esc_html_e( 'Content displayed after the footnotes at the bottom of the post. Accepts HTML, including heading tags, paragraphs, and links.', 'footnotes-made-easy' ); ?></p>
                                 </td>
                             </tr>
                         </table>
