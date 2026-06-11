@@ -3,7 +3,7 @@
  * Plugin Name:       Footnotes Made Easy
  * Plugin URI:        https://lumumbas.blog/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           3.2.0-beta.9
+ * Version:           3.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
@@ -96,6 +96,24 @@ function fme_enqueue_styles( $hook ) {
         ),
         'postedTab'  => isset( $_POST['fme_active_tab'] ) ? sanitize_key( wp_unslash( $_POST['fme_active_tab'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Tab state only; nonce is verified in save_options().
     ) );
+
+    // Coming Soon / Pro waitlist page — enqueue countdown + signup script
+    if ( 'footnotes-pro' === $current_page ) {
+        $cs_js_path = plugin_dir_path( __FILE__ ) . 'assets/js/coming-soon.js';
+        wp_enqueue_script(
+            'fme-coming-soon',
+            plugin_dir_url( __FILE__ ) . 'assets/js/coming-soon.js',
+            array(),
+            file_exists( $cs_js_path ) ? filemtime( $cs_js_path ) : '1.0',
+            true
+        );
+        wp_localize_script( 'fme-coming-soon', 'fmeComingSoon', array(
+            'launchDate' => '2026-07-30T00:00:00',
+            'mailchimp'  => 'https://altvisewp.us4.list-manage.com/subscribe/post?u=edd56a2e64d1ab3af251e7353&id=427b81c751&f_id=00d66deaf0',
+            'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+            'nonce'      => wp_create_nonce( 'fme_waitlist_nonce' ),
+        ) );
+    }
 }
 add_action( 'admin_enqueue_scripts', 'fme_enqueue_styles' );
 
@@ -186,18 +204,16 @@ function fme_enqueue_welcome_modal( string $hook ): void { // phpcs:ignore WordP
         'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
         'nonce'    => wp_create_nonce( 'fme_welcome_nonce' ),
     ] );
+
+    // Preblur the page until the welcome modal appears (added via inline style on a registered handle)
+    wp_register_style( 'fme-welcome-preblur', false ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+    wp_enqueue_style( 'fme-welcome-preblur' );
+    wp_add_inline_style(
+        'fme-welcome-preblur',
+        '#wpcontent,#wpbody-content,#adminmenu{filter:blur(4px) brightness(0.92);pointer-events:none;user-select:none;transition:filter 0.3s ease;}body.wp-admin::before{content:"";position:fixed;inset:0;background:rgba(20,18,40,0.28);z-index:9998;pointer-events:none;}'
+    );
 }
 add_action( 'admin_enqueue_scripts', 'fme_enqueue_welcome_modal' );
-
-// Inject blur styles in <head> so page is blurred before content renders
-add_action( 'admin_head', function (): void {
-    if ( ! get_transient( 'fme_show_welcome' ) ) return;
-    // Only on our pages
-    $page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-    $our_pages = [ 'footnotes-made-easy', 'footnotes-settings', 'footnotes-tools', 'footnotes-help', 'footnotes-pro', 'fme-pro-library', 'fme-pro-license' ];
-    if ( ! in_array( $page, $our_pages, true ) ) return;
-    echo '<style id="fme-welcome-preblur">#wpcontent,#wpbody-content,#adminmenu{filter:blur(4px);pointer-events:none;user-select:none;}</style>';
-} );
 
 // AJAX handler — mark welcome as shown
 add_action( 'wp_ajax_fme_dismiss_welcome', function (): void {
@@ -222,7 +238,8 @@ add_action( 'wp_ajax_fme_record_waitlist', function (): void {
 // Inject admin CSS for full-width purple Upgrade to Pro menu item
 function fme_pro_menu_css() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Legacy function name, renaming would break existing installations.
     if ( defined( 'FME_PRO_VERSION' ) || ! swas_wp_footnotes::show_upsell() ) return;
-    echo '<style>
+
+    $css = '
 #adminmenu a[href="admin.php?page=footnotes-pro"] {
     background: #534AB7 !important;
     color: #fff !important;
@@ -235,12 +252,16 @@ function fme_pro_menu_css() { // phpcs:ignore WordPress.NamingConventions.Prefix
 #adminmenu li.current a[href="admin.php?page=footnotes-pro"] {
     background: #433aa0 !important;
     color: #fff !important;
+}';
+
+    // Register a lightweight handle to attach inline styles to (menu appears on all admin pages)
+    wp_register_style( 'fme-admin-menu', false ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+    wp_enqueue_style( 'fme-admin-menu' );
+    wp_add_inline_style( 'fme-admin-menu', $css );
 }
-</style>';
-}
-add_action( 'admin_head', 'fme_pro_menu_css' );
+add_action( 'admin_enqueue_scripts', 'fme_pro_menu_css' );
 add_action( 'network_admin_menu', function () {
-    add_action( 'admin_head', 'fme_pro_menu_css' );
+    add_action( 'admin_enqueue_scripts', 'fme_pro_menu_css' );
 } );
 
 $swas_wp_footnotes = new swas_wp_footnotes(); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
@@ -336,6 +357,7 @@ class swas_wp_footnotes {
         if ( $this->current_options[ 'pretty_tooltips' ] ) add_action( 'wp_enqueue_scripts', array( $this, 'tooltip_scripts' ) );
 
         add_filter( 'plugin_action_links', array( $this, 'add_settings_link' ), 10, 2 );
+        add_filter( 'network_admin_plugin_action_links', array( $this, 'add_network_settings_link' ), 10, 2 );
         add_filter( 'plugin_row_meta', array( $this, 'plugin_meta' ), 10, 2 );
 
         add_filter( 'admin_footer_text', array( $this, 'remove_footer_text' ) );
@@ -741,10 +763,37 @@ class swas_wp_footnotes {
 		if ( empty( $this_plugin ) ) { $this_plugin = plugin_basename( __FILE__ ); }
 
 		if ( $file === $this_plugin ) {
-			$settings_link = '<a href="admin.php?page=footnotes-made-easy" style="font-weight: 700; color: #534AB7;">' . __( 'Dashboard', 'footnotes-made-easy' ) . '</a>';
+			// In network-managed mode the Dashboard page is not registered on
+			// subsites, so don't show a link that would 404. Show it only where
+			// the menu actually exists.
+			if ( is_multisite() && self::get_ms_mode() === 'network' && ! is_network_admin() ) {
+				return $links;
+			}
+
+			$settings_link = '<a href="' . esc_url( self::get_admin_page_url( 'footnotes-made-easy' ) ) . '" style="font-weight: 700; color: #534AB7;">' . __( 'Dashboard', 'footnotes-made-easy' ) . '</a>';
 			array_unshift( $links, $settings_link );
 		}
 		
+		return $links;
+	}
+
+	/**
+	 * Dashboard link on the network admin plugins list.
+	 * Points super admins to the network-admin Dashboard.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @param array  $links Current action links.
+	 * @param string $file  Plugin file in use.
+	 * @return array Links, with the network Dashboard link added.
+	 */
+	function add_network_settings_link( $links, $file ) {
+
+		if ( plugin_basename( __FILE__ ) === $file && is_super_admin() ) {
+			$settings_link = '<a href="' . esc_url( network_admin_url( 'admin.php?page=footnotes-made-easy' ) ) . '" style="font-weight: 700; color: #534AB7;">' . __( 'Dashboard', 'footnotes-made-easy' ) . '</a>';
+			array_unshift( $links, $settings_link );
+		}
+
 		return $links;
 	}
 

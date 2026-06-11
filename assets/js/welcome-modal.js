@@ -98,9 +98,13 @@
     // ── Blur the page content behind the modal ────────────────
 
     function unblurPage() {
-        // Remove the server-injected preblur style
-        var preblur = document.getElementById( 'fme-welcome-preblur' );
+        // Remove the server-injected preblur style.
+        // wp_add_inline_style outputs the CSS in a style tag with the handle suffixed by "-inline-css".
+        var preblur = document.getElementById( 'fme-welcome-preblur-inline-css' );
         if ( preblur ) preblur.remove();
+        // Fallback for older markup
+        var legacyPreblur = document.getElementById( 'fme-welcome-preblur' );
+        if ( legacyPreblur ) legacyPreblur.remove();
         // Also remove any JS-added blur classes
         document.querySelectorAll( '.fme-welcome-blur' ).forEach( function ( el ) {
             el.classList.remove( 'fme-welcome-blur' );

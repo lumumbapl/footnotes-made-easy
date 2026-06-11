@@ -5,7 +5,7 @@ Donate link: https://lumumbas.blog/support-wp-plugins
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 3.2.0-beta.9
+Stable tag: 3.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,7 +38,7 @@ Footnotes Made Easy is a simple but powerful plugin for adding footnotes to your
 
 == Getting Started ==
 
-[youtube https://www.youtube.com/watch?v=LuXMb8Hz4tc]
+[youtube https://www.youtube.com/watch?v=Bl9p2-lSZMU]
 
 Creating a footnote is simple; wrap your footnote text in double parentheses:
 

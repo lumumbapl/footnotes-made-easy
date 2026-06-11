@@ -87,7 +87,7 @@
         var modal  = document.getElementById('fme-video-modal');
         var iframe = document.getElementById('fme-video-iframe');
         var closeBtn = document.getElementById('fme-video-close');
-        var videoId = 'LuXMb8Hz4tc';
+        var videoId = 'Bl9p2-lSZMU';
 
         function openModal() {
             if ( ! modal || ! iframe ) { return; }
