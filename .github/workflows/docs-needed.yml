@@ -1,93 +1,112 @@
-import fs from 'node:fs';
-import path from 'node:path';
+name: Create docs issue
 
-const repoRoot = process.cwd();
-const configPath = path.join(repoRoot, 'docs-sync.config.json');
-const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+on:
+  pull_request_target:
+    types: [labeled]
 
-const issueTitle = process.env.ISSUE_TITLE || '';
-const issueBody = process.env.ISSUE_BODY || '';
-const issueUrl = process.env.ISSUE_URL || '';
-const issueNumber = process.env.ISSUE_NUMBER || '';
+jobs:
+  create-docs-issue:
+    if: github.event.label.name == 'docs-needed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+    steps:
+      - name: Check for an existing docs issue
+        id: guard
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
 
-function pick(marker, fallback = '') {
-  const re = new RegExp(`<!--\\s*${marker}\\s*:\\s*([^>]+?)\\s*-->`, 'i');
-  const match = issueBody.match(re);
-  return (match?.[1] || fallback).trim();
-}
+            const existing = comments.data.find(comment =>
+              typeof comment.body === 'string' && comment.body.includes('Docs issue opened:')
+            );
 
-function inferTemplateKey() {
-  const explicit = pick('docs-template', '');
-  if (explicit) return explicit;
-  const text = `${issueTitle} ${issueBody}`.toLowerCase();
-  if (text.includes('install') || text.includes('setup')) return 'installation';
-  if (text.includes('getting started') || text.includes('syntax') || text.includes('footnote')) return 'getting-started';
-  if (text.includes('pro')) return 'pro-installation';
-  return config.defaultTemplate;
-}
+            core.setOutput('exists', existing ? 'true' : 'false');
 
-function inferTargetDoc(templateKey) {
-  const explicit = pick('docs-target', '');
-  if (explicit) return explicit;
-  return config.targets[templateKey] ?? config.targets[config.defaultTemplate];
-}
+      - name: Determine docs template
+        id: meta
+        shell: bash
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          text="${PR_TITLE} ${PR_BODY}"
+          lower="${text,,}"
 
-function renderTemplate(template, vars) {
-  return template.replace(/{{\s*([A-Z_]+)\s*}}/g, (_, key) => vars[key] ?? '');
-}
+          template_key=default
+          target_doc="footnotes-made-easy/README.md"
+          summary="Docs update requested from PR #${{ github.event.pull_request.number }}"
 
-function updateFile(filePath, renderedBlock) {
-  const abs = path.join(repoRoot, filePath);
-  const original = fs.readFileSync(abs, 'utf8');
-  const begin = '<!-- docs-bot:start -->';
-  const end = '<!-- docs-bot:end -->';
-  const block = `${begin}\n${renderedBlock}\n${end}`;
-  let updated;
+          if [[ "$lower" == *install* || "$lower" == *setup* ]]; then
+            template_key=installation
+            target_doc="footnotes-made-easy/installation.md"
+          elif [[ "$lower" == *getting started* || "$lower" == *syntax* || "$lower" == *footnote* ]]; then
+            template_key=getting-started
+            target_doc="footnotes-made-easy/getting-started.md"
+          elif [[ "$lower" == *pro* ]]; then
+            template_key=pro-installation
+            target_doc="footnotes-made-easy/pro-installation.md"
+          fi
 
-  if (original.includes(begin) && original.includes(end)) {
-    updated = original.replace(new RegExp(`${begin}[\\s\\S]*?${end}`), block);
-  } else if (/^#\s+/m.test(original)) {
-    const match = original.match(/^(#\s+.*?\n)/m);
-    const insertAt = match ? match.index + match[0].length : 0;
-    updated = `${original.slice(0, insertAt)}\n${block}\n${original.slice(insertAt)}`.trimEnd() + '\n';
-  } else {
-    updated = `${original.trimEnd()}\n\n${block}\n`;
-  }
+          printf 'template_key=%s\n' "$template_key" >> "$GITHUB_OUTPUT"
+          printf 'target_doc=%s\n' "$target_doc" >> "$GITHUB_OUTPUT"
+          printf 'summary=%s\n' "$summary" >> "$GITHUB_OUTPUT"
 
-  fs.mkdirSync(path.dirname(abs), { recursive: true });
-  fs.writeFileSync(abs, updated);
-}
+      - name: Create issue in docs repo
+        if: steps.guard.outputs.exists != 'true'
+        id: issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.DOCS_REPO_PAT }}
+          script: |
+            const owner = 'altvisewp';
+            const repo = 'docs';
+            const pr = context.payload.pull_request;
+            const templateKey = `${{ steps.meta.outputs.template_key }}`;
+            const targetDoc = `${{ steps.meta.outputs.target_doc }}`;
+            const summary = `${{ steps.meta.outputs.summary }}`;
 
-const templateKey = inferTemplateKey();
-const targetDoc = inferTargetDoc(templateKey);
-const templateFile = path.join(repoRoot, config.templates[templateKey] ?? config.templates[config.defaultTemplate]);
-const template = fs.readFileSync(templateFile, 'utf8');
+            const body = `## Docs update request\n\n${summary}\n\n- Source PR: ${pr.html_url}\n- Plugin repo: ${context.repo.owner}/${context.repo.repo}\n- Template key: ${templateKey}\n- Target doc: ${targetDoc}\n\n<!-- docs-template: ${templateKey} -->\n<!-- docs-target: ${targetDoc} -->\n<!-- plugin-pr: ${pr.html_url} -->\n<!-- change-summary: ${pr.title.replace(/`/g, '\\`')} -->\n`;
 
-const summary = pick('change-summary', issueTitle) || issueTitle;
-const rendered = renderTemplate(template, {
-  ISSUE_TITLE: issueTitle,
-  ISSUE_BODY: issueBody,
-  ISSUE_URL: issueUrl,
-  ISSUE_NUMBER: issueNumber,
-  SUMMARY: summary,
-  TEMPLATE_KEY: templateKey,
-  TARGET_DOC: targetDoc,
-});
+            const issue = await github.rest.issues.create({
+              owner,
+              repo,
+              title: `[footnotes-made-easy] Docs update: ${pr.title}`,
+              body,
+              labels: ['docs-needed', 'from-plugin'],
+            });
 
-updateFile(targetDoc, rendered);
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: issue.data.number,
+              body: `Requested from ${pr.html_url}.\n\nUpdated target: \`${targetDoc}\`\nTemplate: \`${templateKey}\`\nSummary: ${summary}`,
+            });
 
-process.stdout.write(JSON.stringify({ templateKey, targetDoc, summary }, null, 2));
+            core.setOutput('issue_number', issue.data.number.toString());
+            core.setOutput('issue_url', issue.data.html_url);
 
-const out = process.env.GITHUB_OUTPUT;
-if (out) {
-  fs.appendFileSync(out, `pr_title=docs: ${summary}\n`);
-  fs.appendFileSync(out, `pr_body<<EOF\n${[
-    'Automated docs update from GitHub issue.',
-    `- Issue: ${issueUrl}`,
-    `- Template: ${templateKey}`,
-    `- Target: ${targetDoc}`,
-    '',
-    summary,
-  ].join('\n')}\nEOF\n`);
-  fs.appendFileSync(out, `summary=${summary}\n`);
-}
+      - name: Comment back on the plugin PR
+        if: steps.guard.outputs.exists != 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const pr = context.payload.pull_request;
+            const issueUrl = '${{ steps.issue.outputs.issue_url }}';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: `Docs issue opened: ${issueUrl}`,
+            });
