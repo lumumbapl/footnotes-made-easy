@@ -47,16 +47,20 @@ jobs:
           target_doc="footnotes-made-easy/README.md"
           summary="Docs update requested from PR #${{ github.event.pull_request.number }}"
 
-          if [[ "$lower" == *install* || "$lower" == *setup* ]]; then
-            template_key=installation
-            target_doc="footnotes-made-easy/installation.md"
-          elif [[ "$lower" == *getting started* || "$lower" == *syntax* || "$lower" == *footnote* ]]; then
-            template_key=getting-started
-            target_doc="footnotes-made-easy/getting-started.md"
-          elif [[ "$lower" == *pro* ]]; then
-            template_key=pro-installation
-            target_doc="footnotes-made-easy/pro-installation.md"
-          fi
+          case "$lower" in
+            *install*|*setup*)
+              template_key=installation
+              target_doc="footnotes-made-easy/installation.md"
+              ;;
+            *getting\ started*|*syntax*|*footnote*)
+              template_key=getting-started
+              target_doc="footnotes-made-easy/getting-started.md"
+              ;;
+            *pro*)
+              template_key=pro-installation
+              target_doc="footnotes-made-easy/pro-installation.md"
+              ;;
+          esac
 
           printf 'template_key=%s\n' "$template_key" >> "$GITHUB_OUTPUT"
           printf 'target_doc=%s\n' "$target_doc" >> "$GITHUB_OUTPUT"
