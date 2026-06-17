@@ -3,7 +3,7 @@
  * Plugin Name:       Footnotes Made Easy
  * Plugin URI:        https://lumumbas.blog/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           3.2.1-beta.1
+ * Version:           3.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
@@ -26,6 +26,83 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit; 
 }
+
+// Migration engine — loaded early so AJAX handlers firing before admin_init can use it.
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-migration-engine.php';
+
+// ── Migration AJAX handlers ───────────────────────────────────────────────────
+
+/**
+ * Shared nonce + capability guard for all migration AJAX actions.
+ */
+function fme_migration_auth_check(): void {
+	check_ajax_referer( 'fme_migration_nonce', 'nonce' );
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( __( 'Insufficient permissions.', 'footnotes-made-easy' ), 403 );
+	}
+}
+
+/**
+ * Validate and return src delimiters from POST, or send JSON error.
+ *
+ * @return array{src_open: string, src_close: string}|null
+ */
+function fme_migration_get_src_delimiters(): ?array {
+	$src_open  = FME_Migration_Engine::validate_delimiter( wp_unslash( $_POST['src_open']  ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- validate_delimiter() sanitises internally
+	$src_close = FME_Migration_Engine::validate_delimiter( wp_unslash( $_POST['src_close'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+	if ( is_wp_error( $src_open ) )  { wp_send_json_error( $src_open->get_error_message() );  return null; }
+	if ( is_wp_error( $src_close ) ) { wp_send_json_error( $src_close->get_error_message() ); return null; }
+	return [ 'src_open' => $src_open, 'src_close' => $src_close ];
+}
+
+/** Dry-run scan. */
+function fme_ajax_migration_scan(): void {
+	fme_migration_auth_check();
+	$delims = fme_migration_get_src_delimiters();
+	if ( ! $delims ) return;
+	wp_send_json_success( FME_Migration_Engine::dry_run( $delims['src_open'], $delims['src_close'] ) );
+}
+
+/** Create backup and return key. */
+function fme_ajax_migration_backup(): void {
+	fme_migration_auth_check();
+	$delims = fme_migration_get_src_delimiters();
+	if ( ! $delims ) return;
+	$result = FME_Migration_Engine::create_backup( $delims['src_open'], $delims['src_close'] );
+	is_wp_error( $result ) ? wp_send_json_error( $result->get_error_message() ) : wp_send_json_success( $result );
+}
+
+/** Process one migration batch. */
+function fme_ajax_migration_batch(): void {
+	fme_migration_auth_check();
+	$delims    = fme_migration_get_src_delimiters();
+	if ( ! $delims ) return;
+	$tgt_open  = FME_Migration_Engine::validate_delimiter( wp_unslash( $_POST['tgt_open']  ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$tgt_close = FME_Migration_Engine::validate_delimiter( wp_unslash( $_POST['tgt_close'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	if ( is_wp_error( $tgt_open ) )  { wp_send_json_error( $tgt_open->get_error_message() );  return; }
+	if ( is_wp_error( $tgt_close ) ) { wp_send_json_error( $tgt_close->get_error_message() ); return; }
+	$offset = max( 0, (int) ( $_POST['offset'] ?? 0 ) );
+	wp_send_json_success( FME_Migration_Engine::run_batch( $delims['src_open'], $delims['src_close'], $tgt_open, $tgt_close, $offset ) );
+}
+
+/** Rollback from backup. */
+function fme_ajax_migration_rollback(): void {
+	fme_migration_auth_check();
+	$result = FME_Migration_Engine::rollback( sanitize_key( wp_unslash( $_POST['key'] ?? '' ) ) );
+	is_wp_error( $result ) ? wp_send_json_error( $result->get_error_message() ) : wp_send_json_success( $result );
+}
+
+/** Serve backup file download. */
+function fme_ajax_migration_download(): void {
+	check_ajax_referer( 'fme_migration_nonce', 'nonce' );
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'Insufficient permissions.', 'footnotes-made-easy' ), 403 );
+	}
+	FME_Migration_Engine::serve_backup_download( sanitize_key( wp_unslash( $_GET['key'] ?? '' ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce verified above
+}
+
+// ── End migration handlers ────────────────────────────────────────────────────
 
 /**
  * Enqueue plugin admin styles and scripts — only on our plugin pages.
@@ -134,6 +211,44 @@ function fme_enqueue_styles( $hook ) {
             'mailchimp'  => 'https://altvisewp.us4.list-manage.com/subscribe/post?u=edd56a2e64d1ab3af251e7353&id=427b81c751&f_id=00d66deaf0',
             'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
             'nonce'      => wp_create_nonce( 'fme_waitlist_nonce' ),
+        ) );
+    }
+
+    // Migration tool — enqueue on the Tools page
+    if ( 'footnotes-tools' === $current_page ) {
+        $migration_js_path = plugin_dir_path( __FILE__ ) . 'assets/js/fme-migration.js';
+        wp_enqueue_script(
+            'fme-migration',
+            plugin_dir_url( __FILE__ ) . 'assets/js/fme-migration.js',
+            array(),
+            file_exists( $migration_js_path ) ? filemtime( $migration_js_path ) : '1.0',
+            true
+        );
+        wp_localize_script( 'fme-migration', 'fmeMigration', array(
+            'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+            'nonce'        => wp_create_nonce( 'fme_migration_nonce' ),
+            'currentOpen'  => get_option( 'footnotes_open',  '((' ),
+            'currentClose' => get_option( 'footnotes_close', '))' ),
+            'i18n'         => array(
+                'scan'           => esc_html__( 'Scan posts', 'footnotes-made-easy' ),
+                'scanning'       => esc_html__( 'Scanning…', 'footnotes-made-easy' ),
+                'noMatches'      => esc_html__( 'No footnotes found matching those markers.', 'footnotes-made-easy' ),
+                'postsFound'     => esc_html__( '%d posts contain matching footnotes', 'footnotes-made-easy' ),
+                'instancesFound' => esc_html__( '%d footnote instances total', 'footnotes-made-easy' ),
+                'samples'        => esc_html__( 'Sample matches (up to 5):', 'footnotes-made-easy' ),
+                'footnoteCount'  => esc_html__( '%d footnote(s)', 'footnotes-made-easy' ),
+                'creatingBackup' => esc_html__( 'Creating backup…', 'footnotes-made-easy' ),
+                'starting'       => esc_html__( 'Starting…', 'footnotes-made-easy' ),
+                'processing'     => esc_html__( 'Processing post %1$d of %2$d…', 'footnotes-made-easy' ),
+                'done'           => esc_html__( 'Done', 'footnotes-made-easy' ),
+                'complete'       => esc_html__( '%1$d posts updated, %2$d footnotes converted.', 'footnotes-made-easy' ),
+                'errors'         => esc_html__( '%d error(s) occurred. Some posts may not have been updated.', 'footnotes-made-easy' ),
+                'rollbackConfirm'=> esc_html__( 'This will restore all affected posts to their state before migration. Continue?', 'footnotes-made-easy' ),
+                'rollingBack'    => esc_html__( 'Rolling back…', 'footnotes-made-easy' ),
+                'rollback'       => esc_html__( 'Rollback migration', 'footnotes-made-easy' ),
+                'rollbackDone'   => esc_html__( '%d posts restored successfully.', 'footnotes-made-easy' ),
+                'error'          => esc_html__( 'An unexpected error occurred. Please try again.', 'footnotes-made-easy' ),
+            ),
         ) );
     }
 }
@@ -370,6 +485,13 @@ class swas_wp_footnotes {
         add_action( 'admin_post_fme_save_preserve_settings', array( $this, 'handle_preserve_settings' ) );
         add_action( 'admin_post_fme_export_settings',        array( $this, 'handle_export_settings' ) );
         add_action( 'admin_post_fme_import_settings',        array( $this, 'handle_import_settings' ) );
+
+        // Migration tool AJAX handlers
+        add_action( 'wp_ajax_fme_migration_scan',     'fme_ajax_migration_scan' );
+        add_action( 'wp_ajax_fme_migration_backup',   'fme_ajax_migration_backup' );
+        add_action( 'wp_ajax_fme_migration_batch',    'fme_ajax_migration_batch' );
+        add_action( 'wp_ajax_fme_migration_rollback', 'fme_ajax_migration_rollback' );
+        add_action( 'wp_ajax_fme_migration_download', 'fme_ajax_migration_download' );
 
         // Hook me up
         add_action( 'the_content', array( $this, 'process' ), $this->current_options[ 'priority' ] );

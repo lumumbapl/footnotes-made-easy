@@ -318,6 +318,147 @@ if (
             </div>
             <?php endif; ?>
 
+            <!-- ── Migrate Footnotes ──────────────────────────────────────── -->
+            <?php
+            $fme_current_open  = get_option( 'footnotes_open',  '((' );
+            $fme_current_close = get_option( 'footnotes_close', '))' );
+            ?>
+            <div class="fme-section" id="fme-migration-tool">
+                <h2 class="fme-section-title"><?php esc_html_e( 'Migrate footnotes', 'footnotes-made-easy' ); ?></h2>
+                <p class="description" style="margin-bottom:16px;">
+                    <?php esc_html_e( 'Convert footnote markers in your post content — either change delimiters after updating Settings → Advanced, or import footnotes from another plugin.', 'footnotes-made-easy' ); ?>
+                </p>
+
+                <!-- Mode tabs -->
+                <div class="fme-migration-tabs" role="tablist">
+                    <button type="button" class="fme-migration-tab fme-migration-tab--active" data-mode="change" role="tab">
+                        <?php esc_html_e( 'Change delimiters', 'footnotes-made-easy' ); ?>
+                    </button>
+                    <button type="button" class="fme-migration-tab" data-mode="migrate" role="tab">
+                        <?php esc_html_e( 'Migrate from another plugin', 'footnotes-made-easy' ); ?>
+                    </button>
+                </div>
+
+                <!-- Mode: Change delimiters -->
+                <div class="fme-migration-mode" data-mode="change">
+                    <p class="description"><?php esc_html_e( 'Use this after changing your delimiter settings. It finds all posts using the old markers and replaces them with your current settings.', 'footnotes-made-easy' ); ?></p>
+                    <table class="form-table fme-migration-form-table">
+                        <tr>
+                            <th><?php esc_html_e( 'Old opening delimiter', 'footnotes-made-easy' ); ?></th>
+                            <td><input type="text" id="fme-migration-old-open" class="small-text" value="((" placeholder="((" /></td>
+                        </tr>
+                        <tr>
+                            <th><?php esc_html_e( 'Old closing delimiter', 'footnotes-made-easy' ); ?></th>
+                            <td><input type="text" id="fme-migration-old-close" class="small-text" value="))" placeholder="))" /></td>
+                        </tr>
+                        <tr>
+                            <th><?php esc_html_e( 'New (current) delimiters', 'footnotes-made-easy' ); ?></th>
+                            <td>
+                                <code><?php echo esc_html( $fme_current_open ); ?></code>
+                                &nbsp;…&nbsp;
+                                <code><?php echo esc_html( $fme_current_close ); ?></code>
+                                <p class="description"><?php esc_html_e( 'From Settings → Advanced. Change there first, then run migration.', 'footnotes-made-easy' ); ?></p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Mode: Migrate from another plugin -->
+                <div class="fme-migration-mode" data-mode="migrate" style="display:none;">
+                    <p class="description"><?php esc_html_e( 'Convert footnotes created by another plugin into Footnotes Made Easy format.', 'footnotes-made-easy' ); ?></p>
+                    <table class="form-table fme-migration-form-table">
+                        <tr>
+                            <th><?php esc_html_e( 'Source plugin', 'footnotes-made-easy' ); ?></th>
+                            <td>
+                                <select id="fme-migration-source">
+                                    <?php foreach ( FME_Migration_Engine::known_formats() as $key => $fmt ) : ?>
+                                    <option value="<?php echo esc_attr( $key ); ?>"
+                                            data-open="<?php echo esc_attr( $fmt['open'] ); ?>"
+                                            data-close="<?php echo esc_attr( $fmt['close'] ); ?>">
+                                        <?php echo esc_html( $fmt['label'] ); ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Custom delimiter inputs -->
+                    <div id="fme-migration-custom-wrap" style="display:none;">
+                        <table class="form-table fme-migration-form-table">
+                            <tr>
+                                <th><?php esc_html_e( 'Custom opening tag', 'footnotes-made-easy' ); ?></th>
+                                <td><input type="text" id="fme-migration-custom-open" class="small-text" placeholder="e.g. [fn]" /></td>
+                            </tr>
+                            <tr>
+                                <th><?php esc_html_e( 'Custom closing tag', 'footnotes-made-easy' ); ?></th>
+                                <td><input type="text" id="fme-migration-custom-close" class="small-text" placeholder="e.g. [/fn]" /></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <table class="form-table fme-migration-form-table">
+                        <tr>
+                            <th><?php esc_html_e( 'Target (current FME delimiters)', 'footnotes-made-easy' ); ?></th>
+                            <td>
+                                <code><?php echo esc_html( $fme_current_open ); ?></code>
+                                &nbsp;…&nbsp;
+                                <code><?php echo esc_html( $fme_current_close ); ?></code>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Scan + results -->
+                <div class="fme-migration-actions">
+                    <button type="button" class="button button-secondary" id="fme-migration-scan">
+                        <?php esc_html_e( 'Scan posts', 'footnotes-made-easy' ); ?>
+                    </button>
+                </div>
+                <div id="fme-migration-scan-result" style="margin-top:12px;"></div>
+
+                <!-- Backup download (shown after backup is created) -->
+                <div id="fme-migration-download-wrap" style="display:none;margin-top:8px;">
+                    <p class="description">
+                        <?php esc_html_e( 'A backup of affected post content has been created. Download it before proceeding — it will expire after 24 hours.', 'footnotes-made-easy' ); ?>
+                    </p>
+                    <a id="fme-migration-download-btn" href="#" class="button button-secondary" download>
+                        <?php esc_html_e( '↓ Download backup', 'footnotes-made-easy' ); ?>
+                    </a>
+                </div>
+
+                <!-- Run migration -->
+                <div class="fme-migration-actions" style="margin-top:12px;">
+                    <button type="button" class="button button-primary" id="fme-migration-run" disabled>
+                        <?php esc_html_e( 'Run migration', 'footnotes-made-easy' ); ?>
+                    </button>
+                    <span class="description"><?php esc_html_e( 'Scan posts first to enable this button.', 'footnotes-made-easy' ); ?></span>
+                </div>
+
+                <!-- Progress bar -->
+                <div id="fme-migration-progress" style="display:none;margin-top:16px;">
+                    <div class="fme-migration-bar-wrap">
+                        <div class="fme-migration-bar" id="fme-migration-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    <p id="fme-migration-progress-label" class="description" style="margin-top:6px;"></p>
+                </div>
+
+                <!-- Completion notice -->
+                <div id="fme-migration-completion" style="display:none;margin-top:12px;"></div>
+
+                <!-- Rollback -->
+                <div id="fme-migration-rollback" style="display:none;margin-top:16px;border-top:1px solid #f0f0f1;padding-top:16px;">
+                    <p class="description">
+                        <strong><?php esc_html_e( 'Rollback available', 'footnotes-made-easy' ); ?></strong> —
+                        <?php esc_html_e( 'Restore all post content to the state before migration. The backup expires after 24 hours.', 'footnotes-made-easy' ); ?>
+                    </p>
+                    <button type="button" class="button button-secondary fme-btn-danger" id="fme-migration-rollback-btn">
+                        <?php esc_html_e( 'Rollback migration', 'footnotes-made-easy' ); ?>
+                    </button>
+                </div>
+
+            </div><!-- /#fme-migration-tool -->
+
         </div><!-- /.fme-settings-main -->
 
         <?php include dirname( __FILE__ ) . '/sidebar.php'; ?>
