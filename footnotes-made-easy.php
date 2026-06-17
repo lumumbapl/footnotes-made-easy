@@ -3,7 +3,7 @@
  * Plugin Name:       Footnotes Made Easy
  * Plugin URI:        https://lumumbas.blog/plugins/footnotes-made-easy/
  * Description:       Allows post authors to easily add and manage footnotes in posts.
- * Version:           3.2.1-beta.3
+ * Version:           3.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Patrick Lumumba
@@ -96,6 +96,28 @@ function fme_enqueue_styles( $hook ) {
         ),
         'postedTab'  => isset( $_POST['fme_active_tab'] ) ? sanitize_key( wp_unslash( $_POST['fme_active_tab'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Tab state only; nonce is verified in save_options().
     ) );
+
+    // Feedback modal — available on the Help page
+    if ( 'footnotes-help' === $current_page ) {
+        $plugin_data    = get_plugin_data( __FILE__, false, false );
+        $plugin_version = $plugin_data['Version'] ?? '1.0';
+        wp_localize_script( 'fme-admin-settings', 'fmeFeedback', array(
+            'endpointBugReports'      => 'https://analytics.altvisewp.com/wp-json/altvisewp/v1/bug-reports',
+            'endpointFeatureRequests' => 'https://analytics.altvisewp.com/wp-json/altvisewp/v1/feature-requests',
+            'endpointFeedback'        => 'https://analytics.altvisewp.com/wp-json/altvisewp/v1/feedback',
+            'pluginSlug'    => 'footnotes-made-easy',
+            'pluginVersion' => $plugin_version,
+            'wpVersion'     => get_bloginfo( 'version' ),
+            'siteUrl'       => get_site_url(),
+            'nonce'         => wp_create_nonce( 'fme_feedback_nonce' ),
+            'i18n'          => array(
+                'sending'      => esc_html__( 'Sending…', 'footnotes-made-easy' ),
+                'sent'         => esc_html__( 'Thank you! Your message has been sent.', 'footnotes-made-easy' ),
+                'error'        => esc_html__( 'Something went wrong. Please try again.', 'footnotes-made-easy' ),
+                'submit'       => esc_html__( 'Send message', 'footnotes-made-easy' ),
+            ),
+        ) );
+    }
 
     // Coming Soon / Pro waitlist page — enqueue countdown + signup script
     if ( 'footnotes-pro' === $current_page ) {
@@ -1283,7 +1305,7 @@ class swas_wp_footnotes {
 		);
 
 		// Include Pro settings if Pro is active and licensed
-		if ( defined( 'FME_PRO_VERSION' ) && class_exists( 'FME_Pro_License' ) && FME_Pro_License::is_active() ) {
+		if ( defined( 'FME_PRO_VERSION' ) && function_exists( 'fmep_fs' ) && fmep_fs() && fmep_fs()->is_paying() ) {
 			$data['settings']['pro'] = array(
 				'fme_pro_citation_style'            => get_option( 'fme_pro_citation_style', 'apa' ),
 				'fme_preserve_settings_on_uninstall' => get_option( 'fme_preserve_settings_on_uninstall', '0' ),
@@ -1364,8 +1386,9 @@ class swas_wp_footnotes {
 		if ( ! empty( $data['settings']['pro'] ) ) {
 			if (
 				defined( 'FME_PRO_VERSION' ) &&
-				class_exists( 'FME_Pro_License' ) &&
-				FME_Pro_License::is_active()
+				function_exists( 'fmep_fs' ) &&
+				fmep_fs() &&
+				fmep_fs()->is_paying()
 			) {
 				$pro         = $data['settings']['pro'];
 				$allowed_pro = array( 'fme_pro_citation_style', 'fme_preserve_settings_on_uninstall' );
@@ -1492,6 +1515,7 @@ class swas_wp_footnotes {
 			'footnotes-pro',
 			'fme-pro-library',
 			'fme-pro-license',
+			'footnotes-made-easy-account',
 		);
 		return in_array( $page, $our_pages, true );
 	}

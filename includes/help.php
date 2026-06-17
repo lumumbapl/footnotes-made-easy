@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $fme_version    = get_plugin_data( plugin_dir_path( __FILE__ ) . '../footnotes-made-easy.php', false, false )['Version'] ?? '';
-$fme_pro_active  = defined( 'FME_PRO_VERSION' ) && class_exists( 'FME_Pro_License' ) && FME_Pro_License::is_active();
+$fme_pro_active  = defined( 'FME_PRO_VERSION' ) && function_exists( 'fmep_fs' ) && fmep_fs() && fmep_fs()->is_paying();
 $fme_show_upsell = class_exists( 'swas_wp_footnotes' ) ? swas_wp_footnotes::show_upsell() : true;
 ?>
 <div class="wrap fme-wrap">
@@ -105,7 +105,7 @@ $fme_show_upsell = class_exists( 'swas_wp_footnotes' ) ? swas_wp_footnotes::show
                         <th style="width:140px;">
                             <span class="fme-help-tab-badge">
                                 <?php echo esc_html( $fme_tab['label'] ); ?>
-                                <?php if ( $fme_tab['pro'] ) : ?>
+                                <?php if ( $fme_tab['pro'] && ! $fme_pro_active ) : ?>
                                 <span class="fme-badge-pro">PRO</span>
                                 <?php endif; ?>
                             </span>
@@ -117,7 +117,32 @@ $fme_show_upsell = class_exists( 'swas_wp_footnotes' ) ? swas_wp_footnotes::show
             </div>
 
             <!-- Pro features -->
-            <?php if ( ! $fme_pro_active && $fme_show_upsell ) : ?>
+            <?php if ( defined( 'FME_PRO_VERSION' ) && ! $fme_pro_active && $fme_show_upsell ) : ?>
+            <div class="fme-section">
+                <h3 class="fme-section-label"><?php esc_html_e( 'Pro features', 'footnotes-made-easy' ); ?></h3>
+                <div class="fme-help-pro-grid">
+                    <div class="fme-help-pro-card">
+                        <svg class="fme-help-pro-card__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 13V5a2 2 00-2-2H4a2 2 00-2 2v8a2 2 002 2h3l3 3 3-3h3a2 2 002-2zM5 7a1 1 011-1h8a1 1 110 2H6a1 1 01-1-1zm1 3a1 1 100 2h3a1 1 100-2H6z" clip-rule="evenodd"/></svg>
+                        <p class="fme-help-pro-card__title"><?php esc_html_e( 'Citations', 'footnotes-made-easy' ); ?></p>
+                        <p class="fme-help-pro-card__desc"><?php esc_html_e( 'APA, MLA, and Chicago. 10 source types. Auto-fetch metadata from DOI or ISBN.', 'footnotes-made-easy' ); ?></p>
+                    </div>
+                    <div class="fme-help-pro-card">
+                        <svg class="fme-help-pro-card__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>
+                        <p class="fme-help-pro-card__title"><?php esc_html_e( 'Library', 'footnotes-made-easy' ); ?></p>
+                        <p class="fme-help-pro-card__desc"><?php esc_html_e( 'Save footnotes once and reuse them across all posts in seconds.', 'footnotes-made-easy' ); ?></p>
+                    </div>
+                    <div class="fme-help-pro-card">
+                        <svg class="fme-help-pro-card__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3 4a1 1 011-1h12a1 1 011 1v2a1 1 01-1 1H4a1 1 01-1-1V4zM3 10a1 1 011-1h6a1 1 011 1v6a1 1 01-1 1H4a1 1 01-1-1v-6zM14 9a1 1 00-1 1v6a1 1 001 1h2a1 1 001-1v-6a1 1 00-1-1h-2z"/></svg>
+                        <p class="fme-help-pro-card__title"><?php esc_html_e( 'Gutenberg panel', 'footnotes-made-easy' ); ?></p>
+                        <p class="fme-help-pro-card__desc"><?php esc_html_e( 'Manage all footnotes from the editor sidebar without leaving the post.', 'footnotes-made-easy' ); ?></p>
+                    </div>
+                </div>
+                <a href="#" class="button button-primary fme-help-pro-cta activate-license-trigger footnotes-made-easy">
+                    <?php esc_html_e( 'Activate Footnotes Made Easy Pro', 'footnotes-made-easy' ); ?> →
+                </a>
+            </div>
+
+            <?php elseif ( ! $fme_pro_active && $fme_show_upsell ) : ?>
             <div class="fme-section">
                 <h3 class="fme-section-label"><?php esc_html_e( 'Pro features', 'footnotes-made-easy' ); ?></h3>
                 <div class="fme-help-pro-grid">
@@ -163,10 +188,10 @@ $fme_show_upsell = class_exists( 'swas_wp_footnotes' ) ? swas_wp_footnotes::show
                         <span><?php esc_html_e( 'Support forum', 'footnotes-made-easy' ); ?></span>
                         <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M7 3.5l2.5 2.5L7 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </a>
-                    <a href="https://altvisewp.com/support/" target="_blank" rel="noopener noreferrer" class="fme-quicklink-row">
+                    <button type="button" id="fme-feedback-trigger" class="fme-quicklink-row fme-quicklink-btn" data-type="bug_report">
                         <span><?php esc_html_e( 'Report a bug', 'footnotes-made-easy' ); ?></span>
                         <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M7 3.5l2.5 2.5L7 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </a>
+                    </button>
                     <a href="https://docs.altvisewp.com/footnotes-made-easy/faq" target="_blank" rel="noopener noreferrer" class="fme-quicklink-row">
                         <span><?php esc_html_e( 'Frequently asked questions', 'footnotes-made-easy' ); ?></span>
                         <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M7 3.5l2.5 2.5L7 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>

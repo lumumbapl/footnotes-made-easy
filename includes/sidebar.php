@@ -14,8 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 $fme_current_page = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : '';
 
 $fme_pro_active = defined( 'FME_PRO_VERSION' )
-    && class_exists( 'FME_Pro_License' )
-    && FME_Pro_License::is_active();
+    && function_exists( 'fmep_fs' )
+    && fmep_fs()
+    && fmep_fs()->is_paying();
 
 $fme_show_upsell = class_exists( 'swas_wp_footnotes' )
     ? swas_wp_footnotes::show_upsell()
@@ -66,8 +67,20 @@ $fme_allowed_tip_html = [
         <p class="fme-tip-card__text" style="color:#78350f;"><?php esc_html_e( 'Footnotes Made Easy Pro is installed but not yet licensed. Please contact your network administrator to activate the license.', 'footnotes-made-easy' ); ?></p>
     </div>
 
+    <?php elseif ( defined( 'FME_PRO_VERSION' ) && ! $fme_pro_active && $fme_show_upsell ) : ?>
+    <!-- Pro installed but license inactive — prompt to activate -->
+    <div class="fme-upgrade-card">
+        <div class="fme-upgrade-card__icon" aria-hidden="true">🔑</div>
+        <h3 class="fme-upgrade-card__heading"><?php esc_html_e( 'Activate your license', 'footnotes-made-easy' ); ?></h3>
+        <p class="fme-upgrade-card__text"><?php esc_html_e( 'Footnotes Made Easy Pro is installed. Activate your license to unlock Citations, Library, and the Gutenberg sidebar panel.', 'footnotes-made-easy' ); ?></p>
+        <a href="#" class="fme-upgrade-card__btn activate-license-trigger footnotes-made-easy">
+            <?php esc_html_e( 'Activate license', 'footnotes-made-easy' ); ?>
+            <svg viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7 3.5l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+    </div>
+
     <?php elseif ( $fme_show_upsell ) : ?>
-    <!-- Upgrade nudge -->
+    <!-- Upgrade nudge — Pro not installed -->
     <div class="fme-upgrade-card">
         <div class="fme-upgrade-card__icon" aria-hidden="true">✦</div>
         <h3 class="fme-upgrade-card__heading"><?php esc_html_e( 'Upgrade to Pro', 'footnotes-made-easy' ); ?></h3>
